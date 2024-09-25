@@ -1,0 +1,54 @@
+name: crossmap-dev-api
+version: 0.0.0.1
+github: "crossmap-dev/api"
+license: BSD-3-Clause
+author: "Mike Taylor"
+maintainer: "mike.charles.taylor@gmail.com"
+copyright: "2024 Mike Taylor"
+
+extra-source-files:
+- README.md
+
+description:         Please see the README on GitHub at <https://github.com/crossmap-dev/api#readme>
+
+dependencies:
+- aeson
+- base
+- base64
+- optparse-applicative
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+executables:
+  crossmap-dev:
+    main:                Main.hs
+    source-dirs:         cli/client
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - crossmap-dev-api
+  crossmap-dev-server:
+    main:                Main.hs
+    source-dirs:         cli/server
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - crossmap-dev-api

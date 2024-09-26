@@ -6,33 +6,34 @@ module CROSSMAP.Login
   ) where
 
 import Data.Aeson
+import Data.UUID
 
 
 data LoginRequest = LoginRequest
-  { username :: String
+  { loginRequestUsername :: String
   } deriving (Show)
 
 
 instance FromJSON LoginRequest where
   parseJSON = withObject "LoginRequest" $ \o -> do
-    username <- o .: "username"
+    loginRequestUsername <- o .: "username"
     return LoginRequest{..}
 
 
 instance ToJSON LoginRequest where
-  toJSON LoginRequest{..} = object [ "username" .= username ]
+  toJSON LoginRequest{..} = object [ "username" .= loginRequestUsername ]
 
 
 data LoginResponse = LoginResponse
-  { session :: String
+  { loginResponseSessionId :: UUID
   } deriving (Show)
 
 
 instance FromJSON LoginResponse where
   parseJSON = withObject "LoginResponse" $ \o -> do
-    session <- o .: "session"
+    loginResponseSessionId <- o .: "sessionId"
     return LoginResponse{..}
 
 
 instance ToJSON LoginResponse where
-  toJSON LoginResponse{..} = object [ "session" .= session ]
+  toJSON LoginResponse{..} = object [ "sessionId" .= loginResponseSessionId ]

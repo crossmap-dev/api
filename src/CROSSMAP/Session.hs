@@ -5,18 +5,19 @@ module CROSSMAP.Session
   ) where
 
 import Data.Aeson
+import Data.UUID
 
 
 data SessionResponse = SessionResponse
-  { session :: String
+  { sessionResponseId :: UUID
   } deriving (Show)
 
 
 instance FromJSON SessionResponse where
   parseJSON = withObject "SessionResponse" $ \o -> do
-    session <- o .: "session"
+    sessionResponseId <- o .: "sessionId"
     return SessionResponse{..}
 
 
 instance ToJSON SessionResponse where
-  toJSON SessionResponse{..} = object [ "session" .= session ]
+  toJSON SessionResponse{..} = object [ "sessionId" .= sessionResponseId ]

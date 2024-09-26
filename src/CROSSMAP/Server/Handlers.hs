@@ -4,21 +4,23 @@ module CROSSMAP.Server.Handlers
   , sessionHandler
   ) where
 
+import Data.UUID
 import Servant
 
 import CROSSMAP.Index
 import CROSSMAP.Login
 import CROSSMAP.Session
 import CROSSMAP.Server.Auth
+import CROSSMAP.Server.State
 
 
 indexHandler :: Handler IndexResponse
 indexHandler = return $ IndexResponse "CROSSMAP"
 
 
-loginHandler :: UserSignature -> LoginRequest -> Handler LoginResponse
-loginHandler _ loginReq = return $ LoginResponse $ username loginReq
+loginHandler :: State -> UserSignature -> LoginRequest -> Handler LoginResponse
+loginHandler _ _ _ = return $ LoginResponse nil
 
 
-sessionHandler :: SessionSignature -> Handler SessionResponse
-sessionHandler _ = return $ SessionResponse "placeholder"
+sessionHandler :: State -> SessionSignature -> Handler SessionResponse
+sessionHandler _ _ = return $ SessionResponse nil

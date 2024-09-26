@@ -6,19 +6,20 @@ import Servant
 
 import CROSSMAP.API
 import CROSSMAP.Server.Handlers
+import CROSSMAP.Server.State
 
 
-server :: Server API
-server = publicServer :<|> loginServer :<|> secureServer
+server :: State -> Server API
+server state = publicServer state :<|> loginServer state :<|> secureServer state
 
 
-publicServer :: Server PublicAPI
-publicServer = indexHandler
+publicServer :: State -> Server PublicAPI
+publicServer _ = indexHandler
 
 
-loginServer :: Server SecureUserAPI
+loginServer :: State -> Server SecureUserAPI
 loginServer = loginHandler
 
 
-secureServer :: Server SecureSessionAPI
+secureServer :: State -> Server SecureSessionAPI
 secureServer = sessionHandler

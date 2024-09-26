@@ -1,0 +1,47 @@
+FROM docker.io/debian:bookworm-slim as build
+
+ENV LANG=C.UTF-8
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        curl \
+        libffi-dev \
+        libgmp-dev \
+        libncurses-dev \
+        libpq-dev \
+        libtinfo5 \
+        zlib1g-dev \
+        pkg-config && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV GHC_VERSION=9.10.1
+
+# Install GHC
+RUN set -eux; \
+    cd /tmp; \
+    INSTALL_TAR="ghc-${GHC_VERSION}-x86_64-deb12-linux.tar.xz"; \
+    curl -fsSLO https://downloads.haskell.org/~ghc/${GHC_VERSION}/${INSTALL_TAR}; \
+    tar -xf ${INSTALL_TAR}; \
+    ls -al; \
+    cd ghc-${GHC_VERSION}-x86_64-unknown-linux; \
+    ./configure --prefix=/opt/ghc/${GHC_VERSION}; \
+    make install; \
+    cd /; \
+    rm -rf /tmp/*; \
+    /opt/ghc/${GHC_VERSION}/bin/ghc --version
+
+ENV CABAL_VERSION=3.12.1.0
+
+# Install Cabal
+RUN set -eux; \
+    cd /tmp; \
+    INSTALL_TAR="cabal-install-${CABAL_VERSION}-x86_64-linux-deb12.tar.xz"; \
+    curl -fsSLO https://downloads.haskell.org/~cabal/cabal-install-${CABAL_VERSION}/${INSTALL_TAR}; \
+    tar -xf ${INSTALL_TAR} -C /usr/local/bin; \
+    cd /; \
+    rm -rf /tmp/*; \
+    cabal --version
+
+ENV PATH=/opt/ghc/${GHC_VERSION}/bin:/root/.cabal/bin:/usr/local/bin:$PATH

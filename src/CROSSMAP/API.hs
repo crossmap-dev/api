@@ -4,8 +4,8 @@ module CROSSMAP.API
   ( API
   , PublicAPI
   , PrivateAPI
-  , IndexResponse(..)
-  , SessionResponse(..)
+  , SecureUserAPI
+  , SecureSessionAPI
   , api
   , publicAPI
   , privateAPI

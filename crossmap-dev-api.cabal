@@ -27,9 +27,12 @@ library
       CROSSMAP.Client.Command
       CROSSMAP.Index
       CROSSMAP.Login
+      CROSSMAP.Server.API
+      CROSSMAP.Server.Auth
       CROSSMAP.Server.Command
       CROSSMAP.Server.Config
       CROSSMAP.Server.DB
+      CROSSMAP.Server.Handlers
       CROSSMAP.Server.State
       CROSSMAP.Session
   other-modules:
@@ -50,6 +53,8 @@ library
     , hasql-transaction
     , optparse-applicative
     , servant-server
+    , wai
+    , warp
   default-language: Haskell2010
 
 executable crossmap-dev
@@ -73,6 +78,8 @@ executable crossmap-dev
     , hasql-transaction
     , optparse-applicative
     , servant-server
+    , wai
+    , warp
   default-language: Haskell2010
 
 executable crossmap-dev-server
@@ -96,4 +103,6 @@ executable crossmap-dev-server
     , hasql-transaction
     , optparse-applicative
     , servant-server
+    , wai
+    , warp
   default-language: Haskell2010

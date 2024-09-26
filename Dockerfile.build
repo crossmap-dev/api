@@ -39,9 +39,11 @@ RUN set -eux; \
     cd /tmp; \
     INSTALL_TAR="cabal-install-${CABAL_VERSION}-x86_64-linux-deb12.tar.xz"; \
     curl -fsSLO https://downloads.haskell.org/~cabal/cabal-install-${CABAL_VERSION}/${INSTALL_TAR}; \
-    tar -xf ${INSTALL_TAR} -C /usr/local/bin; \
+    mkdir -p /opt/cabal/3.12/bin; \
+    tar -xf ${INSTALL_TAR} -C /opt/cabal/3.12/bin; \
     cd /; \
     rm -rf /tmp/*; \
-    cabal --version
+    /opt/cabal/3.12/bin/cabal --version
 
-ENV PATH=/opt/ghc/${GHC_VERSION}/bin:/root/.cabal/bin:/usr/local/bin:$PATH
+ENV PATH=/opt/ghc/${GHC_VERSION}/bin:/opt/cabal/3.12/bin:$PATH
+ENV PATH=/root/.cabal/bin:$PATH

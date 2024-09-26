@@ -16,16 +16,13 @@ jobs:
     runs-on: crossmap-dev-runners-k8s
 
     container:
-      image: images.home.mtaylor.io/crossmap-dev-api-build:sha-e74a91c
+      image: images.home.mtaylor.io/crossmap-dev-api-build:sha-4f2c0f3
 
     strategy:
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install libpq-dev
-        run: apt-get update && apt-get install -y libpq-dev
 
       - uses: haskell-actions/setup@v2
         id: setup

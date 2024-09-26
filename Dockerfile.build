@@ -1,4 +1,4 @@
-FROM docker.io/debian:bookworm-slim as build
+FROM docker.io/debian:bookworm-slim AS build
 
 ENV LANG=C.UTF-8
 
@@ -24,7 +24,6 @@ RUN set -eux; \
     INSTALL_TAR="ghc-${GHC_VERSION}-x86_64-deb12-linux.tar.xz"; \
     curl -fsSLO https://downloads.haskell.org/~ghc/${GHC_VERSION}/${INSTALL_TAR}; \
     tar -xf ${INSTALL_TAR}; \
-    ls -al; \
     cd ghc-${GHC_VERSION}-x86_64-unknown-linux; \
     ./configure --prefix=/opt/ghc/${GHC_VERSION}; \
     make install; \

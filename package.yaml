@@ -16,7 +16,9 @@ dependencies:
 - base
 - base64
 - bytestring
+- case-insensitive
 - containers
+- ed25519
 - hasql
 - hasql-migration
 - hasql-pool

@@ -49,7 +49,9 @@ library
     , base
     , base64
     , bytestring
+    , case-insensitive
     , containers
+    , ed25519
     , hasql
     , hasql-migration
     , hasql-pool
@@ -84,8 +86,10 @@ executable crossmap-dev
     , base
     , base64
     , bytestring
+    , case-insensitive
     , containers
     , crossmap-dev-api
+    , ed25519
     , hasql
     , hasql-migration
     , hasql-pool
@@ -120,8 +124,10 @@ executable crossmap-dev-server
     , base
     , base64
     , bytestring
+    , case-insensitive
     , containers
     , crossmap-dev-api
+    , ed25519
     , hasql
     , hasql-migration
     , hasql-pool

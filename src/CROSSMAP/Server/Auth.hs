@@ -10,8 +10,9 @@ module CROSSMAP.Server.Auth
   ) where
 
 import Control.Monad.IO.Class (liftIO)
-import Crypto.Sign.Ed25519 (PublicKey(..))
+import Crypto.Sign.Ed25519
 import Data.ByteString
+import Data.ByteString.Base64
 import Data.CaseInsensitive (original)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8)
@@ -83,22 +84,27 @@ ensureCommonAuthHeaders req = do
 
 checkUserAuth :: CommonAuthHeaders -> ByteString -> Handler UserSignature
 checkUserAuth CommonAuthHeaders{..} userId = do
-  liftIO $ putStrLn "TODO: Implement user signature check"
+  let stringToSign = hostHeader <> "\n" <> requestIdHeader <> "\n" <> userId
+  liftIO $ putStrLn $ "User string to sign: " <> show stringToSign
   userSignatureHost <- return $ decodeUtf8 hostHeader
   userSignatureRequestId <- ensureValidUUID requestIdHeader
   userSignaturePublicKey <- ensureValidPublicKey publicKeyHeader
   userSignatureUserId <- ensureValidUUID userId
+  ensureValidSignature authHeader stringToSign userSignaturePublicKey
   return UserSignature{..}
 
 
 checkSessionAuth ::
   CommonAuthHeaders -> ByteString -> ByteString -> Handler SessionSignature
 checkSessionAuth CommonAuthHeaders{..} sessionId sessionToken = do
-  liftIO $ putStrLn "TODO: Implement session signature check"
+  let stringToSign = hostHeader <> "\n" <> requestIdHeader
+        <> "\n" <> sessionId <> "\n" <> sessionToken
+  liftIO $ putStrLn $ "Session string to sign: " <> show stringToSign
   sessionSignatureHost <- return $ decodeUtf8 hostHeader
   sessionSignatureRequestId <- ensureValidUUID requestIdHeader
   sessionSignaturePublicKey <- ensureValidPublicKey publicKeyHeader
   sessionSignatureSessionId <- ensureValidUUID sessionId
+  ensureValidSignature authHeader stringToSign sessionSignaturePublicKey
   return SessionSignature{..}
 
 
@@ -107,8 +113,7 @@ ensureHeader req name = case lookup name (requestHeaders req) of
   Just value -> return value
   Nothing -> throwError $ err401
     { errBody = "Missing required header: " <> cast name }
-  where
-    cast = fromStrict . original
+  where cast = fromStrict . original
 
 
 ensureValidUUID :: ByteString -> Handler UUID
@@ -121,3 +126,15 @@ ensureValidPublicKey :: ByteString -> Handler PublicKey
 ensureValidPublicKey bs = if Data.ByteString.length bs == 32
   then return $ PublicKey bs
   else throwError $ err401 { errBody = "Invalid public key" }
+
+
+ensureValidSignature :: ByteString -> ByteString -> PublicKey -> Handler ()
+ensureValidSignature authHeader stringToSign publicKey = do
+  -- authHeader is expected to be in the format "Signature <signature>"
+  case Data.ByteString.splitAt 10 authHeader of
+    ("Signature ", signatureBase64) -> do
+      let signature = Data.ByteString.Base64.decodeBase64Lenient signatureBase64
+      if Crypto.Sign.Ed25519.dverify publicKey stringToSign $ Signature signature
+        then return ()
+        else throwError $ err401 { errBody = "Invalid signature" }
+    _ -> throwError $ err401 { errBody = "Invalid Authorization header" }

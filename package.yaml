@@ -21,6 +21,7 @@ dependencies:
 - hasql-pool
 - hasql-transaction
 - optparse-applicative
+- servant-server
 
 ghc-options:
 - -Wall

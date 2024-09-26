@@ -28,11 +28,13 @@ library
       CROSSMAP.Index
       CROSSMAP.Login
       CROSSMAP.Server.API
+      CROSSMAP.Server.App
       CROSSMAP.Server.Auth
       CROSSMAP.Server.Command
       CROSSMAP.Server.Config
       CROSSMAP.Server.DB
       CROSSMAP.Server.Handlers
+      CROSSMAP.Server.Socket
       CROSSMAP.Server.State
       CROSSMAP.Session
   other-modules:
@@ -47,14 +49,25 @@ library
     , base
     , base64
     , bytestring
+    , containers
     , hasql
     , hasql-migration
     , hasql-pool
     , hasql-transaction
+    , http-client
+    , http-client-tls
+    , http-types
     , optparse-applicative
     , servant-server
+    , stm
+    , text
+    , time
+    , uuid
     , wai
+    , wai-extra
+    , wai-websockets
     , warp
+    , websockets
   default-language: Haskell2010
 
 executable crossmap-dev
@@ -71,15 +84,26 @@ executable crossmap-dev
     , base
     , base64
     , bytestring
+    , containers
     , crossmap-dev-api
     , hasql
     , hasql-migration
     , hasql-pool
     , hasql-transaction
+    , http-client
+    , http-client-tls
+    , http-types
     , optparse-applicative
     , servant-server
+    , stm
+    , text
+    , time
+    , uuid
     , wai
+    , wai-extra
+    , wai-websockets
     , warp
+    , websockets
   default-language: Haskell2010
 
 executable crossmap-dev-server
@@ -96,13 +120,24 @@ executable crossmap-dev-server
     , base
     , base64
     , bytestring
+    , containers
     , crossmap-dev-api
     , hasql
     , hasql-migration
     , hasql-pool
     , hasql-transaction
+    , http-client
+    , http-client-tls
+    , http-types
     , optparse-applicative
     , servant-server
+    , stm
+    , text
+    , time
+    , uuid
     , wai
+    , wai-extra
+    , wai-websockets
     , warp
+    , websockets
   default-language: Haskell2010

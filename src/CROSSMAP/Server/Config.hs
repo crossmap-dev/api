@@ -13,7 +13,8 @@ import System.Environment (lookupEnv)
 
 
 data Env = Env
-  { envPostgresPool :: Int
+  { envPort         :: Int
+  , envPostgresPool :: Int
   , envPostgresHost :: ByteString
   , envPostgresPort :: Word16
   , envPostgresUser :: ByteString
@@ -24,7 +25,8 @@ data Env = Env
 
 envConfig :: IO Env
 envConfig = do
-  envPostgresPool <- readEnvOrDefault 10 "POSTGRES_POOL"
+  envPort         <- readEnvOrDefault "PORT" 8080
+  envPostgresPool <- readEnvOrDefault "POSTGRES_POOL" 10
   envPostgresHost <- loadEnv "POSTGRES_HOST"
   envPostgresPort <- readEnv "POSTGRES_PORT"
   envPostgresUser <- loadEnv "POSTGRES_USER"
@@ -43,7 +45,7 @@ readEnv :: Read a => String -> IO a
 readEnv name = read . unpack <$> loadEnv name
 
 
-readEnvOrDefault :: Read a => a -> String -> IO a
-readEnvOrDefault def name = lookupEnv name >>= \case
+readEnvOrDefault :: Read a => String -> a -> IO a
+readEnvOrDefault name def = lookupEnv name >>= \case
   Just value -> return $ read value
   Nothing    -> return def

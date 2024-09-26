@@ -16,14 +16,25 @@ dependencies:
 - base
 - base64
 - bytestring
+- containers
 - hasql
 - hasql-migration
 - hasql-pool
 - hasql-transaction
+- http-client
+- http-client-tls
+- http-types
 - optparse-applicative
 - servant-server
+- stm
+- text
+- time
+- uuid
 - wai
+- wai-extra
+- wai-websockets
 - warp
+- websockets
 
 ghc-options:
 - -Wall

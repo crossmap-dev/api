@@ -25,6 +25,9 @@ library
   exposed-modules:
       CROSSMAP.Client.Command
       CROSSMAP.Server.Command
+      CROSSMAP.Server.Config
+      CROSSMAP.Server.DB
+      CROSSMAP.Server.State
   other-modules:
       Paths_crossmap_dev_api
   autogen-modules:
@@ -36,6 +39,11 @@ library
       aeson
     , base
     , base64
+    , bytestring
+    , hasql
+    , hasql-migration
+    , hasql-pool
+    , hasql-transaction
     , optparse-applicative
   default-language: Haskell2010
 
@@ -52,7 +60,12 @@ executable crossmap-dev
       aeson
     , base
     , base64
+    , bytestring
     , crossmap-dev-api
+    , hasql
+    , hasql-migration
+    , hasql-pool
+    , hasql-transaction
     , optparse-applicative
   default-language: Haskell2010
 
@@ -69,6 +82,11 @@ executable crossmap-dev-server
       aeson
     , base
     , base64
+    , bytestring
     , crossmap-dev-api
+    , hasql
+    , hasql-migration
+    , hasql-pool
+    , hasql-transaction
     , optparse-applicative
   default-language: Haskell2010

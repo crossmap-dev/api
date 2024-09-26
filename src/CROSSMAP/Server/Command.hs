@@ -1,8 +1,13 @@
+{-# LANGUAGE RecordWildCards #-}
 module CROSSMAP.Server.Command
   ( run
   ) where
 
 import Options.Applicative
+
+import CROSSMAP.Server.Config
+import CROSSMAP.Server.DB
+import CROSSMAP.Server.State
 
 
 newtype Options = Options
@@ -28,4 +33,11 @@ run = execParser opts >>= runWithOptions
 
 
 runWithOptions :: Options -> IO ()
-runWithOptions opts = putStrLn $ "Running with options: " ++ show opts
+runWithOptions opts = envConfig >>= runWithOptionsAndEnv opts
+
+
+runWithOptionsAndEnv :: Options -> Env -> IO ()
+runWithOptionsAndEnv opts env = do
+  pool <- connect env
+  let state = new pool (optVerbose opts)
+  return ()

@@ -15,6 +15,11 @@ dependencies:
 - aeson
 - base
 - base64
+- bytestring
+- hasql
+- hasql-migration
+- hasql-pool
+- hasql-transaction
 - optparse-applicative
 
 ghc-options:

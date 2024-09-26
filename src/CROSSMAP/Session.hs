@@ -9,15 +9,15 @@ import Data.UUID
 
 
 data SessionResponse = SessionResponse
-  { sessionResponseId :: UUID
+  { sessionResponseSessionId :: UUID
   } deriving (Show)
 
 
 instance FromJSON SessionResponse where
   parseJSON = withObject "SessionResponse" $ \o -> do
-    sessionResponseId <- o .: "sessionId"
+    sessionResponseSessionId <- o .: "sessionId"
     return SessionResponse{..}
 
 
 instance ToJSON SessionResponse where
-  toJSON SessionResponse{..} = object [ "sessionId" .= sessionResponseId ]
+  toJSON SessionResponse{..} = object [ "sessionId" .= sessionResponseSessionId ]

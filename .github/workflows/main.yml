@@ -16,7 +16,7 @@ jobs:
     runs-on: crossmap-dev-runners-k8s
 
     container:
-      image: docker.io/debian:bookworm-slim
+      image: images.home.mtaylor.io/crossmap-dev-api-build:sha-e74a91c
 
     strategy:
       fail-fast: false

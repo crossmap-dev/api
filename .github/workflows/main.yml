@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build:
-    name: GHC ${{ matrix.ghc-version }}
+    name: Build
     runs-on: crossmap-dev-runners-k8s
 
     container:
@@ -20,11 +20,12 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        ghc-version: ['9.10']
 
     steps:
       - uses: actions/checkout@v4
+
+      - uses: haskell-actions/setup@v2
+        id: setup
 
       - name: Configure the build
         run: |

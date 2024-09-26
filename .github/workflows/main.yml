@@ -16,7 +16,7 @@ jobs:
     runs-on: crossmap-dev-runners-k8s
 
     container:
-      image: docker.io/haskell:9.10
+      image: docker.io/haskell:9.10-slim-bullseye
 
     strategy:
       fail-fast: false

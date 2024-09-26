@@ -16,7 +16,7 @@ jobs:
     runs-on: crossmap-dev-runners-k8s
 
     container:
-      image: docker.io/haskell:9.10-slim-bullseye
+      image: docker.io/debian:bookworm-slim
 
     strategy:
       fail-fast: false
@@ -24,12 +24,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install libpq-dev
+        run: apt-get update && apt-get install -y libpq-dev
+
       - uses: haskell-actions/setup@v2
         id: setup
 
       - name: Configure the build
         run: |
-          cabal update
           cabal configure --enable-tests --enable-benchmarks --disable-documentation
           cabal build all --dry-run
         # The last step generates dist-newstyle/cache/plan.json for the cache key.

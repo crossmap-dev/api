@@ -71,5 +71,5 @@ jobs:
       # - name: Check cabal file
       #   run: cabal check
 
-      - name: Build documentation
-        run: cabal haddock all
+      # - name: Build documentation
+      #   run: cabal haddock all

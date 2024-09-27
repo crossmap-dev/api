@@ -34,6 +34,7 @@ library
       CROSSMAP.Server.Config
       CROSSMAP.Server.DB
       CROSSMAP.Server.DB.Migration
+      CROSSMAP.Server.DB.User
       CROSSMAP.Server.Handlers
       CROSSMAP.Server.Socket
       CROSSMAP.Server.State

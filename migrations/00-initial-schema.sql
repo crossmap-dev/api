@@ -8,6 +8,14 @@ CREATE TABLE IF NOT EXISTS "users_names" (
   FOREIGN KEY ("user_uuid") REFERENCES "users" ("uuid") ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS "users_public_keys" (
+  "public_key" BYTEA PRIMARY KEY,
+  "user_uuid" UUID NOT NULL,
+  "created_at" TIMESTAMP NOT NULL,
+  "expires_at" TIMESTAMP NOT NULL,
+  FOREIGN KEY ("user_uuid") REFERENCES "users" ("uuid") ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS "groups" (
   "uuid" UUID PRIMARY KEY
 );
@@ -63,28 +71,27 @@ CREATE TABLE IF NOT EXISTS "groups_policies" (
 );
 
 CREATE TABLE IF NOT EXISTS "sessions" (
-  "uuid" UUID PRIMARY KEY,
+  "public_key" BYTEA PRIMARY KEY,
   "address" INET NOT NULL,
   "user_uuid" UUID NOT NULL,
-  "public_key" BYTEA NOT NULL,
   "created_at" TIMESTAMP NOT NULL,
   "expires_at" TIMESTAMP NOT NULL,
   FOREIGN KEY ("user_uuid") REFERENCES "users" ("uuid") ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "sessions_policies" (
-  "session_uuid" UUID NOT NULL,
+  "session_public_key" BYTEA NOT NULL,
   "policy_uuid" UUID NOT NULL,
-  PRIMARY KEY ("session_uuid", "policy_uuid"),
-  FOREIGN KEY ("session_uuid") REFERENCES "sessions" ("uuid") ON DELETE CASCADE,
+  PRIMARY KEY ("session_public_key", "policy_uuid"),
+  FOREIGN KEY ("session_public_key") REFERENCES "sessions" ("public_key") ON DELETE CASCADE,
   FOREIGN KEY ("policy_uuid") REFERENCES "policies" ("uuid") ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "sessions_groups" (
-  "session_uuid" UUID NOT NULL,
+  "session_public_key" BYTEA NOT NULL,
   "group_uuid" UUID NOT NULL,
-  PRIMARY KEY ("session_uuid", "group_uuid"),
-  FOREIGN KEY ("session_uuid") REFERENCES "sessions" ("uuid") ON DELETE CASCADE,
+  PRIMARY KEY ("session_public_key", "group_uuid"),
+  FOREIGN KEY ("session_public_key") REFERENCES "sessions" ("public_key") ON DELETE CASCADE,
   FOREIGN KEY ("group_uuid") REFERENCES "groups" ("uuid") ON DELETE CASCADE
 );
 

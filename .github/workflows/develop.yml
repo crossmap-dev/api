@@ -13,3 +13,7 @@ concurrency:
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
+    with:
+      tags: |
+        develop
+        type=sha

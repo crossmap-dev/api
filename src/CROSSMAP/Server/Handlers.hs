@@ -18,9 +18,9 @@ indexHandler :: State -> Handler IndexResponse
 indexHandler _ = return $ IndexResponse "CROSSMAP"
 
 
-loginHandler :: State -> UserSignature -> LoginRequest -> Handler LoginResponse
+loginHandler :: State -> SignatureInfo -> LoginRequest -> Handler LoginResponse
 loginHandler _ _ _ = return $ LoginResponse nil
 
 
-sessionHandler :: State -> SessionSignature -> Handler SessionResponse
+sessionHandler :: State -> SignatureInfo -> Handler SessionResponse
 sessionHandler _ _ = return $ SessionResponse nil

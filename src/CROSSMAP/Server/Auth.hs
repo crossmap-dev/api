@@ -4,8 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 module CROSSMAP.Server.Auth
-  ( UserSignature(..)
-  , SessionSignature(..)
+  ( SignatureInfo(..)
   , authContext
   ) where
 
@@ -22,20 +21,16 @@ import Network.Wai
 import Servant
 import Servant.Server.Experimental.Auth
 
-
-data UserSignature = UserSignature
-  { userSignatureHost :: Text
-  , userSignatureRequestId :: UUID
-  , userSignaturePublicKey :: PublicKey
-  , userSignatureUserId :: UUID
-  } deriving (Eq, Show)
+import CROSSMAP.Server.DB
+import CROSSMAP.Server.DB.PublicKey
+import CROSSMAP.Server.State
 
 
-data SessionSignature = SessionSignature
-  { sessionSignatureHost :: Text
-  , sessionSignatureRequestId :: UUID
-  , sessionSignaturePublicKey :: PublicKey
-  , sessionSignatureSessionId :: UUID
+data SignatureInfo = SignatureInfo
+  { signatureInfoHost :: Text
+  , signatureInfoRequestId :: UUID
+  , signatureInfoPublicKey :: PublicKey
+  , signatureInfoPublicKeyInfo :: PublicKeyInfo
   } deriving (Eq, Show)
 
 
@@ -47,30 +42,28 @@ data CommonAuthHeaders = CommonAuthHeaders
   } deriving (Eq, Show)
 
 
-type instance AuthServerData (AuthProtect "user-signature") = UserSignature
+type instance AuthServerData (AuthProtect "user-signature") = SignatureInfo
 
 
-type instance AuthServerData (AuthProtect "session-signature") = SessionSignature
+type instance AuthServerData (AuthProtect "session-signature") = SignatureInfo
 
 
-authContext :: Context
-  (AuthHandler Request UserSignature ': AuthHandler Request SessionSignature ': '[])
-authContext = userAuthHandler :. sessionAuthHandler :. EmptyContext
+authContext ::
+  State ->
+    Context (AuthHandler Request SignatureInfo ': AuthHandler Request SignatureInfo ': '[])
+authContext state = userAuthHandler state :. sessionAuthHandler state :. EmptyContext
 
 
-userAuthHandler :: AuthHandler Request UserSignature
-userAuthHandler = mkAuthHandler $ \req -> do
+userAuthHandler :: State -> AuthHandler Request SignatureInfo
+userAuthHandler state = mkAuthHandler $ \req -> do
   authHeaders <- ensureCommonAuthHeaders req
-  userIdHeader <- ensureHeader req "X-CROSSMAP-User-Id"
-  checkUserAuth authHeaders userIdHeader
+  checkAuth state authHeaders UserKey
 
 
-sessionAuthHandler :: AuthHandler Request SessionSignature
-sessionAuthHandler = mkAuthHandler $ \req -> do
+sessionAuthHandler :: State -> AuthHandler Request SignatureInfo
+sessionAuthHandler state = mkAuthHandler $ \req -> do
   authHeaders <- ensureCommonAuthHeaders req
-  sessionIdHeader <- ensureHeader req "X-CROSSMAP-Session-Id"
-  sessionTokenHeader <- ensureHeader req "X-CROSSMAP-Session-Token"
-  checkSessionAuth authHeaders sessionIdHeader sessionTokenHeader
+  checkAuth state authHeaders SessionKey
 
 
 ensureCommonAuthHeaders :: Request -> Handler CommonAuthHeaders
@@ -82,30 +75,27 @@ ensureCommonAuthHeaders req = do
   return CommonAuthHeaders {..}
 
 
-checkUserAuth :: CommonAuthHeaders -> ByteString -> Handler UserSignature
-checkUserAuth CommonAuthHeaders{..} userId = do
-  let stringToSign = hostHeader <> "\n" <> requestIdHeader <> "\n" <> userId
-  liftIO $ putStrLn $ "User string to sign: " <> show stringToSign
-  userSignatureHost <- return $ decodeUtf8 hostHeader
-  userSignatureRequestId <- ensureValidUUID requestIdHeader
-  userSignaturePublicKey <- ensureValidPublicKey publicKeyHeader
-  userSignatureUserId <- ensureValidUUID userId
-  ensureValidSignature authHeader stringToSign userSignaturePublicKey
-  return UserSignature{..}
-
-
-checkSessionAuth ::
-  CommonAuthHeaders -> ByteString -> ByteString -> Handler SessionSignature
-checkSessionAuth CommonAuthHeaders{..} sessionId sessionToken = do
+checkAuth :: State -> CommonAuthHeaders -> PublicKeyType -> Handler SignatureInfo
+checkAuth State{pool=pool} CommonAuthHeaders{..} keyType = do
   let stringToSign = hostHeader <> "\n" <> requestIdHeader
-        <> "\n" <> sessionId <> "\n" <> sessionToken
-  liftIO $ putStrLn $ "Session string to sign: " <> show stringToSign
-  sessionSignatureHost <- return $ decodeUtf8 hostHeader
-  sessionSignatureRequestId <- ensureValidUUID requestIdHeader
-  sessionSignaturePublicKey <- ensureValidPublicKey publicKeyHeader
-  sessionSignatureSessionId <- ensureValidUUID sessionId
-  ensureValidSignature authHeader stringToSign sessionSignaturePublicKey
-  return SessionSignature{..}
+  liftIO $ putStrLn $ "User string to sign: " <> show stringToSign
+  signatureInfoHost <- return $ decodeUtf8 hostHeader
+  signatureInfoRequestId <- ensureValidUUID requestIdHeader
+  signatureInfoPublicKey <- ensureValidPublicKey publicKeyHeader
+  ensureValidSignature authHeader stringToSign signatureInfoPublicKey
+  result <- liftIO $ runQuery pool $ lookupPublicKey signatureInfoPublicKey
+  case result of
+    Right (Just publicKeyInfo) -> do
+      if publicKeyInfoType publicKeyInfo == keyType
+        then return SignatureInfo
+          { signatureInfoHost = signatureInfoHost
+          , signatureInfoRequestId = signatureInfoRequestId
+          , signatureInfoPublicKey = signatureInfoPublicKey
+          , signatureInfoPublicKeyInfo = publicKeyInfo
+          }
+        else throwError $ err401 { errBody = "Invalid public key type" }
+    Right Nothing -> throwError $ err401 { errBody = "Public key not found" }
+    Left _ -> throwError $ err500 { errBody = "Database error" }
 
 
 ensureHeader :: Request -> HeaderName -> Handler ByteString

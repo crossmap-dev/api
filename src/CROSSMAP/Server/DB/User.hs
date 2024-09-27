@@ -2,15 +2,17 @@
 module CROSSMAP.Server.DB.User
   ( User(..)
   , Username(..)
+  , UserPublicKey(..)
   , getUser
-  , getUserNames
+  , getUsernames
+  , getUserPublicKeys
   ) where
 
-import Crypto.Sign.Ed25519 (PublicKey)
+import Crypto.Sign.Ed25519 (PublicKey(..))
 import Data.Functor.Contravariant ((>$<))
 import Data.Text (Text)
 import Data.Time.Clock (UTCTime)
-import Data.UUID
+import Data.UUID (UUID)
 import Hasql.Statement (Statement(..))
 import Hasql.Transaction (Transaction, statement)
 import qualified Hasql.Encoders as E
@@ -34,12 +36,12 @@ getUserStatement = Statement sql encoder decoder True where
 data Username = Username { usernameUser :: User, username :: Text } deriving (Eq, Show)
 
 
-getUserNames :: User -> Transaction [Username]
-getUserNames = flip statement getUserNamesStatement
+getUsernames :: User -> Transaction [Username]
+getUsernames = flip statement getUsernamesStatement
 
 
-getUserNamesStatement :: Statement User [Username]
-getUserNamesStatement = Statement sql encoder decoder True where
+getUsernamesStatement :: Statement User [Username]
+getUsernamesStatement = Statement sql encoder decoder True where
   sql = "SELECT user_uuid, name FROM user_names WHERE user_uuid = $1"
   encoder = userId >$< E.param (E.nonNullable E.uuid)
   decoder = D.rowList userNameDecoder
@@ -54,3 +56,20 @@ data UserPublicKey = UserPublicKey
   , userPublicKeyCreated :: UTCTime
   , userPublicKeyExpires :: UTCTime
   } deriving (Eq, Show)
+
+
+getUserPublicKeys :: User -> Transaction [UserPublicKey]
+getUserPublicKeys = flip statement getUserPublicKeysStatement
+
+
+getUserPublicKeysStatement :: Statement User [UserPublicKey]
+getUserPublicKeysStatement = Statement sql encoder decoder True where
+  sql = "SELECT public_key, user_uuid, created_at, expires_at \
+        \FROM user_public_keys WHERE user_uuid = $1"
+  encoder = userId >$< E.param (E.nonNullable E.uuid)
+  decoder = D.rowList userPublicKeyDecoder
+  userPublicKeyDecoder = UserPublicKey
+    <$> (PublicKey <$> D.column (D.nonNullable D.bytea))
+    <*> (User <$> D.column (D.nonNullable D.uuid))
+    <*> D.column (D.nonNullable D.timestamptz)
+    <*> D.column (D.nonNullable D.timestamptz)

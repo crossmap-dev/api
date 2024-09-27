@@ -4,8 +4,11 @@ module CROSSMAP.Client.Command
 
 import Options.Applicative
 
+import CROSSMAP.Client.Command.Keypair
 
-data Command = Placeholder deriving (Show)
+
+data Command
+  = Keypair KeypairCommand deriving (Show)
 
 
 newtype Options = Options Command deriving (Show)
@@ -13,8 +16,8 @@ newtype Options = Options Command deriving (Show)
 
 options :: Parser Options
 options = Options <$> hsubparser
-  ( command "placeholder"
-    ( info ( pure Placeholder ) ( progDesc "Placeholder command" ) )
+  ( command "keypair"
+    ( info (Keypair <$> keypairOptions) ( progDesc "Placeholder command" ) )
   )
 
 
@@ -28,4 +31,4 @@ run = execParser opts >>= runWithOptions
 
 
 runWithOptions :: Options -> IO ()
-runWithOptions (Options Placeholder) = putStrLn "Placeholder command"
+runWithOptions (Options (Keypair cmd)) = runKeypair cmd

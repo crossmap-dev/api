@@ -18,7 +18,7 @@ dependencies:
 - bytestring
 - case-insensitive
 - containers
-- cryptonite
+- crypton
 - ed25519
 - hasql
 - hasql-migration

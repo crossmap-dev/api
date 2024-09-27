@@ -25,6 +25,7 @@ library
   exposed-modules:
       CROSSMAP.API
       CROSSMAP.Client.Command
+      CROSSMAP.Client.Command.Keypair
       CROSSMAP.Index
       CROSSMAP.Login
       CROSSMAP.Password
@@ -58,7 +59,7 @@ library
     , bytestring
     , case-insensitive
     , containers
-    , cryptonite
+    , crypton
     , ed25519
     , hasql
     , hasql-migration
@@ -97,7 +98,7 @@ executable crossmap
     , case-insensitive
     , containers
     , crossmap-api
-    , cryptonite
+    , crypton
     , ed25519
     , hasql
     , hasql-migration
@@ -136,7 +137,7 @@ executable crossmap-server
     , case-insensitive
     , containers
     , crossmap-api
-    , cryptonite
+    , crypton
     , ed25519
     , hasql
     , hasql-migration

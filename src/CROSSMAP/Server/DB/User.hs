@@ -55,7 +55,7 @@ getUserByUsername = flip statement getUserByUsernameStatement
 
 getUserByUsernameStatement :: Statement Text (Maybe User)
 getUserByUsernameStatement = Statement sql encoder decoder True where
-  sql = "SELECT user_uuid FROM user_names WHERE name = $1"
+  sql = "SELECT user_uuid FROM users_names WHERE name = $1"
   encoder = E.param (E.nonNullable E.text)
   decoder = D.rowMaybe (User <$> D.column (D.nonNullable D.uuid))
 
@@ -66,7 +66,7 @@ getUsernames = flip statement getUsernamesStatement
 
 getUsernamesStatement :: Statement User [Username]
 getUsernamesStatement = Statement sql encoder decoder True where
-  sql = "SELECT user_uuid, name FROM user_names WHERE user_uuid = $1"
+  sql = "SELECT user_uuid, name FROM users_names WHERE user_uuid = $1"
   encoder = userId >$< E.param (E.nonNullable E.uuid)
   decoder = D.rowList userNameDecoder
   userNameDecoder = Username
@@ -91,7 +91,7 @@ insertUsername = flip statement insertUsernameStatement
 
 insertUsernameStatement :: Statement Username ()
 insertUsernameStatement = Statement sql encoder decoder False where
-  sql = "INSERT INTO user_names (user_uuid, name) VALUES ($1, $2)"
+  sql = "INSERT INTO users_names (user_uuid, name) VALUES ($1, $2)"
   encoder :: E.Params Username
   encoder
     =  ((userId . usernameUser) >$< E.param (E.nonNullable E.uuid))
@@ -112,7 +112,7 @@ getUserPublicKeys = flip statement getUserPublicKeysStatement
 getUserPublicKeysStatement :: Statement User [UserPublicKey]
 getUserPublicKeysStatement = Statement sql encoder decoder True where
   sql = "SELECT public_key, user_uuid, created_at, expires_at \
-        \FROM user_public_keys WHERE user_uuid = $1"
+        \FROM users_public_keys WHERE user_uuid = $1"
   encoder = userId >$< E.param (E.nonNullable E.uuid)
   decoder = D.rowList userPublicKeyDecoder
   userPublicKeyDecoder = UserPublicKey

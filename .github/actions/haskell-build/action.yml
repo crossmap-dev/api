@@ -3,8 +3,6 @@ description: Build the Haskell project
 runs:
   using: composite
   steps:
-  - uses: actions/checkout@v4
-
   - uses: haskell-actions/setup@v2
     id: setup
 

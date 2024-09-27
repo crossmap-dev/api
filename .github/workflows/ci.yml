@@ -14,12 +14,14 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/actions/haskell-build
   docker-image:
     name: Docker Image
     needs: haskell-build
     runs-on: crossmap-dev-runners-dind
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/actions/docker-image
       with:
         tags: ${{ inputs.tags }}

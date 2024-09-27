@@ -15,13 +15,107 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
-    - uses: ./.github/actions/haskell-build
+
+    - uses: haskell-actions/setup@v2
+      id: setup
+
+    - name: Configure the build
+      shell: sh
+      run: |
+        cabal configure --enable-tests --enable-benchmarks --disable-documentation
+        cabal build all --dry-run
+      # The last step generates dist-newstyle/cache/plan.json for the cache key.
+
+    - name: Restore cached dependencies
+      uses: actions/cache/restore@v4
+      id: cache
+      env:
+        key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
+      with:
+        path: ${{ steps.setup.outputs.cabal-store }}
+        key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
+        restore-keys: ${{ env.key }}-
+
+    - name: Install dependencies
+      # If we had an exact cache hit, the dependencies will be up to date.
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: sh
+      run: cabal build all --only-dependencies
+
+    # Cache dependencies already here, so that we do not have to rebuild them should the subsequent steps fail.
+    - name: Save cached dependencies
+      uses: actions/cache/save@v4
+      # If we had an exact cache hit, trying to save the cache would error because of key clash.
+      if: steps.cache.outputs.cache-hit != 'true'
+      with:
+        path: ${{ steps.setup.outputs.cabal-store }}
+        key: ${{ steps.cache.outputs.cache-primary-key }}
+
+    - name: Build
+      shell: sh
+      run: cabal install --installdir=bin --install-method=copy --overwrite-policy=always
+
+    - name: Run tests
+      shell: sh
+      run: cabal test all
+
+    - name: Upload client
+      uses: actions/upload-artifact@v4
+      with:
+        name: crossmap-dev
+        path: bin/crossmap-dev
+
+    - name: Upload server
+      uses: actions/upload-artifact@v4
+      with:
+        name: crossmap-dev-server
+        path: bin/crossmap-dev-server
   docker-image:
     name: Docker Image
     needs: haskell-build
     runs-on: crossmap-dev-runners-dind
     steps:
     - uses: actions/checkout@v4
-    - uses: ./.github/actions/docker-image
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Download client
+      uses: actions/download-artifact@v4
       with:
+        name: crossmap-dev
+        path: bin/crossmap-dev
+
+    - name: Download server
+      uses: actions/download-artifact@v4
+      with:
+        name: crossmap-dev-server
+        path: bin/crossmap-dev-server
+
+    - name: Fix paths and permissions
+      shell: sh
+      run: |
+        mv bin/crossmap-dev crossmap-dev
+        mv bin/crossmap-dev-server crossmap-dev-server
+        mv crossmap-dev/crossmap-dev bin/crossmap-dev
+        mv crossmap-dev-server/crossmap-dev-server bin/crossmap-dev-server
+        chmod +x bin/crossmap-dev
+        chmod +x bin/crossmap-dev-server
+        rmdir crossmap-dev
+        rmdir crossmap-dev-server
+
+    - id: meta
+      name: Docker Metadata
+      uses: docker/metadata-action@v5
+      with:
+        images: images.home.mtaylor.io/crossmap-dev-api
         tags: ${{ inputs.tags }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: Dockerfile
+        platforms: linux/amd64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}

@@ -2,21 +2,17 @@
 module CROSSMAP.Server.DB.User
   ( User(..)
   , Username(..)
-  , UserPublicKey(..)
   , getUser
   , getUserByUsername
   , getUsernames
-  , getUserPublicKeys
   , insertUser
   , insertUsername
   , insertUserWithName
   , userHasName
   ) where
 
-import Crypto.Sign.Ed25519 (PublicKey(..))
 import Data.Functor.Contravariant ((>$<))
 import Data.Text (Text)
-import Data.Time.Clock (UTCTime)
 import Data.UUID (UUID)
 import Hasql.Statement (Statement(..))
 import Hasql.Transaction (Transaction, statement)
@@ -28,14 +24,6 @@ newtype User = User { userId :: UUID } deriving (Eq, Show)
 
 
 data Username = Username { usernameUser :: User, username :: Text } deriving (Eq, Show)
-
-
-data UserPublicKey = UserPublicKey
-  { userPublicKey :: PublicKey
-  , userPublicKeyUser :: User
-  , userPublicKeyCreated :: UTCTime
-  , userPublicKeyExpires :: UTCTime
-  } deriving (Eq, Show)
 
 
 getUser :: UUID -> Transaction (Maybe User)
@@ -103,23 +91,6 @@ insertUserWithName :: User -> Text -> Transaction ()
 insertUserWithName user name = do
   insertUser user
   insertUsername (Username user name)
-
-
-getUserPublicKeys :: User -> Transaction [UserPublicKey]
-getUserPublicKeys = flip statement getUserPublicKeysStatement
-
-
-getUserPublicKeysStatement :: Statement User [UserPublicKey]
-getUserPublicKeysStatement = Statement sql encoder decoder True where
-  sql = "SELECT public_key, user_uuid, created_at, expires_at \
-        \FROM users_public_keys WHERE user_uuid = $1"
-  encoder = userId >$< E.param (E.nonNullable E.uuid)
-  decoder = D.rowList userPublicKeyDecoder
-  userPublicKeyDecoder = UserPublicKey
-    <$> (PublicKey <$> D.column (D.nonNullable D.bytea))
-    <*> (User <$> D.column (D.nonNullable D.uuid))
-    <*> D.column (D.nonNullable D.timestamptz)
-    <*> D.column (D.nonNullable D.timestamptz)
 
 
 userHasName :: User -> Text -> Transaction Bool

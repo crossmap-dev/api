@@ -17,6 +17,7 @@ import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8)
 import Data.UUID (UUID, fromText)
 import Network.HTTP.Types
+import Network.Socket (SockAddr)
 import Network.Wai
 import Servant
 import Servant.Server.Experimental.Auth
@@ -30,6 +31,7 @@ data SignatureInfo = SignatureInfo
   { signatureInfoHost :: Text
   , signatureInfoRequestId :: UUID
   , signatureInfoPublicKeyInfo :: PublicKeyInfo
+  , signatureInfoSocketAddr :: SockAddr
   } deriving (Eq, Show)
 
 
@@ -56,13 +58,13 @@ authContext state = userAuthHandler state :. sessionAuthHandler state :. EmptyCo
 userAuthHandler :: State -> AuthHandler Request SignatureInfo
 userAuthHandler state = mkAuthHandler $ \req -> do
   authHeaders <- ensureCommonAuthHeaders req
-  checkAuth state authHeaders UserKey
+  checkAuth state authHeaders (remoteHost req) UserKey
 
 
 sessionAuthHandler :: State -> AuthHandler Request SignatureInfo
 sessionAuthHandler state = mkAuthHandler $ \req -> do
   authHeaders <- ensureCommonAuthHeaders req
-  checkAuth state authHeaders SessionKey
+  checkAuth state authHeaders (remoteHost req) SessionKey
 
 
 ensureCommonAuthHeaders :: Request -> Handler AuthHeaders
@@ -74,8 +76,8 @@ ensureCommonAuthHeaders req = do
   return AuthHeaders {..}
 
 
-checkAuth :: State -> AuthHeaders -> PublicKeyType -> Handler SignatureInfo
-checkAuth State{pool=pool} AuthHeaders{..} keyType = do
+checkAuth :: State -> AuthHeaders -> SockAddr -> PublicKeyType -> Handler SignatureInfo
+checkAuth State{pool=pool} AuthHeaders{..} sockAddr keyType = do
   let stringToSign = hostHeader <> "/" <> requestIdHeader
   liftIO $ putStrLn $ "string to sign: " <> show stringToSign
   signatureInfoHost <- return $ decodeUtf8 hostHeader
@@ -90,6 +92,7 @@ checkAuth State{pool=pool} AuthHeaders{..} keyType = do
           { signatureInfoHost = signatureInfoHost
           , signatureInfoRequestId = signatureInfoRequestId
           , signatureInfoPublicKeyInfo = publicKeyInfo
+          , signatureInfoSocketAddr = sockAddr
           }
         else throwError $ err401 { errBody = "Invalid public key type" }
     Right Nothing -> throwError $ err401 { errBody = "Public key not found" }

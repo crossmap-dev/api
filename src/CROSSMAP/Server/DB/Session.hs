@@ -6,35 +6,37 @@ module CROSSMAP.Server.DB.Session
 
 import Crypto.Sign.Ed25519 (PublicKey(..))
 import Data.Functor.Contravariant ((>$<))
+import Data.IP
 import Data.Time.Clock (UTCTime)
 import Hasql.Statement (Statement(..))
 import Hasql.Transaction (Transaction, statement)
 import qualified Hasql.Encoders as E
 import qualified Hasql.Decoders as D
 
+import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.DB.User (User(..))
 
 
 data Session = Session
   { sessionUser :: User
   , sessionPublicKey :: PublicKey
-  , sessionCreated :: UTCTime
-  , sessionExpires :: UTCTime
+  , sessionAddress :: IPRange
   } deriving (Eq, Show)
 
 
-insertSession :: Session -> Transaction ()
-insertSession = flip statement insertSessionStatement
+insertSession :: UTCTime -> UTCTime -> Session -> Transaction ()
+insertSession created expires session = do
+  insertPublicKey created expires (sessionPublicKey session)
+  statement session insertSessionStatement
 
 
 insertSessionStatement :: Statement Session ()
 insertSessionStatement = Statement sql encoder decoder False where
   sql = "INSERT INTO sessions \
-        \(user_uuid, public_key, created_at, expires_at) \
-        \VALUES ($1, $2, $3, $4)"
+        \(user_uuid, public_key, address) \
+        \VALUES ($1, $2, $3)"
   encoder
     =  ((userId . sessionUser) >$< E.param (E.nonNullable E.uuid))
     <> (unPublicKey . sessionPublicKey >$< E.param (E.nonNullable E.bytea))
-    <> (sessionCreated >$< E.param (E.nonNullable E.timestamptz))
-    <> (sessionExpires >$< E.param (E.nonNullable E.timestamptz))
+    <> (sessionAddress >$< E.param (E.nonNullable E.inet))
   decoder = D.noResult

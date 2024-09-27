@@ -3,6 +3,7 @@
 module CROSSMAP.Server.DB.PublicKey
   ( PublicKeyType(..)
   , PublicKeyInfo(..)
+  , insertPublicKey
   , lookupPublicKey
   ) where
 
@@ -27,6 +28,23 @@ data PublicKeyInfo = PublicKeyInfo
   , publicKeyInfoCreated :: UTCTime
   , publicKeyInfoExpires :: UTCTime
   } deriving (Eq, Show)
+
+
+insertPublicKey :: UTCTime -> UTCTime -> PublicKey -> Transaction ()
+insertPublicKey created expires publicKey =
+  statement ((created, expires), publicKey) insertPublicKeyStatement
+
+
+insertPublicKeyStatement :: Statement ((UTCTime, UTCTime), PublicKey) ()
+insertPublicKeyStatement = Statement sql encoder decoder False where
+  sql = "INSERT INTO public_keys \
+        \(created_at, expires_at, public_key) \
+        \VALUES ($1, $2, $3)"
+  encoder
+    =  ((fst . fst) >$< E.param (E.nonNullable E.timestamptz))
+    <> ((snd . fst) >$< E.param (E.nonNullable E.timestamptz))
+    <> (unPublicKey . snd >$< E.param (E.nonNullable E.bytea))
+  decoder = D.noResult
 
 
 lookupPublicKey :: PublicKey -> Transaction (Maybe PublicKeyInfo)

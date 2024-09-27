@@ -19,6 +19,7 @@ dependencies:
 - case-insensitive
 - containers
 - crypton
+- data-textual
 - ed25519
 - hasql
 - hasql-migration
@@ -27,6 +28,8 @@ dependencies:
 - http-client
 - http-client-tls
 - http-types
+- iproute
+- network
 - optparse-applicative
 - servant-client
 - servant-server

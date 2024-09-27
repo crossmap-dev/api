@@ -64,6 +64,7 @@ library
     , case-insensitive
     , containers
     , crypton
+    , data-textual
     , ed25519
     , hasql
     , hasql-migration
@@ -72,6 +73,8 @@ library
     , http-client
     , http-client-tls
     , http-types
+    , iproute
+    , network
     , optparse-applicative
     , servant-client
     , servant-server
@@ -104,6 +107,7 @@ executable crossmap
     , containers
     , crossmap-api
     , crypton
+    , data-textual
     , ed25519
     , hasql
     , hasql-migration
@@ -112,6 +116,8 @@ executable crossmap
     , http-client
     , http-client-tls
     , http-types
+    , iproute
+    , network
     , optparse-applicative
     , servant-client
     , servant-server
@@ -144,6 +150,7 @@ executable crossmap-server
     , containers
     , crossmap-api
     , crypton
+    , data-textual
     , ed25519
     , hasql
     , hasql-migration
@@ -152,6 +159,8 @@ executable crossmap-server
     , http-client
     , http-client-tls
     , http-types
+    , iproute
+    , network
     , optparse-applicative
     , servant-client
     , servant-server

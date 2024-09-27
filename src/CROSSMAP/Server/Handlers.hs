@@ -7,8 +7,10 @@ module CROSSMAP.Server.Handlers
   ) where
 
 import Control.Monad.IO.Class
+import Data.IP
 import Data.Time.Clock
 import Data.UUID
+import Network.Socket
 import Servant
 
 import CROSSMAP.Index
@@ -38,11 +40,16 @@ loginHandler State{..} SignatureInfo{..} loginReq = do
     Right False -> throwError err401
     Right True -> do
       now <- liftIO getCurrentTime
-      result' <- liftIO $ runUpdate pool $ insertSession $ Session
+      let expires = addUTCTime 3600 now
+      result' <- liftIO $ runUpdate pool $ insertSession now expires $ Session
         { sessionUser = publicKeyInfoUser
         , sessionPublicKey = sessionPublicKey
-        , sessionCreated = now
-        , sessionExpires = addUTCTime 3600 now
+        , sessionAddress = case signatureInfoSocketAddr of
+            SockAddrInet _ addr ->
+              IPv4Range $ makeAddrRange (fromHostAddress addr) 32
+            SockAddrInet6 _ _ addr _ ->
+              IPv6Range $ makeAddrRange (fromHostAddress6 addr) 128
+            _ -> error "Unsupported socket address"
         }
       case result' of
         Left _ -> throwError err500

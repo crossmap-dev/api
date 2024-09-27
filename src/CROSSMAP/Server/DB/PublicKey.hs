@@ -22,8 +22,8 @@ data PublicKeyType = UserKey | SessionKey deriving (Eq, Show)
 
 data PublicKeyInfo = PublicKeyInfo
   { publicKeyInfoType :: PublicKeyType
+  , publicKeyInfoUser :: User
   , publicKeyInfoPublicKey :: PublicKey
-  , publicKeyInfoUser :: Maybe User
   , publicKeyInfoCreated :: UTCTime
   , publicKeyInfoExpires :: UTCTime
   } deriving (Eq, Show)
@@ -36,14 +36,14 @@ lookupPublicKey = flip statement lookupPublicKeyStatement
 lookupPublicKeyStatement :: Statement PublicKey (Maybe PublicKeyInfo)
 lookupPublicKeyStatement = Statement sql encoder decoder True where
   sql = "SELECT 'user' as key_type \
-        \  public_key, user_uuid, created_at, expires_at \
+        \  user_uuid, public_key, created_at, expires_at \
         \FROM \
         \  user_public_keys \
         \WHERE \
         \  public_key = $1 \
         \UNION ALL \
         \SELECT 'session' as key_type \
-        \  public_key, user_uuid, created_at, expires_at \
+        \  user_uuid, public_key, created_at, expires_at \
         \FROM \
         \  sessions \
         \WHERE \
@@ -55,8 +55,8 @@ lookupPublicKeyStatement = Statement sql encoder decoder True where
 publicKeyInfoDecoder :: D.Row PublicKeyInfo
 publicKeyInfoDecoder = PublicKeyInfo
   <$> D.column (D.nonNullable publicKeyTypeDecoder)
+  <*> D.column (D.nonNullable (User <$> D.uuid))
   <*> D.column (D.nonNullable (PublicKey <$> D.bytea))
-  <*> D.column (D.nullable (User <$> D.uuid))
   <*> D.column (D.nonNullable D.timestamptz)
   <*> D.column (D.nonNullable D.timestamptz)
 

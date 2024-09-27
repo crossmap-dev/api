@@ -29,12 +29,11 @@ import CROSSMAP.Server.State
 data SignatureInfo = SignatureInfo
   { signatureInfoHost :: Text
   , signatureInfoRequestId :: UUID
-  , signatureInfoPublicKey :: PublicKey
   , signatureInfoPublicKeyInfo :: PublicKeyInfo
   } deriving (Eq, Show)
 
 
-data CommonAuthHeaders = CommonAuthHeaders
+data AuthHeaders = AuthHeaders
   { authHeader      :: ByteString
   , hostHeader      :: ByteString
   , publicKeyHeader :: ByteString
@@ -66,19 +65,19 @@ sessionAuthHandler state = mkAuthHandler $ \req -> do
   checkAuth state authHeaders SessionKey
 
 
-ensureCommonAuthHeaders :: Request -> Handler CommonAuthHeaders
+ensureCommonAuthHeaders :: Request -> Handler AuthHeaders
 ensureCommonAuthHeaders req = do
   authHeader      <- ensureHeader req "Authorization"
   hostHeader      <- ensureHeader req "Host"
   publicKeyHeader <- ensureHeader req "X-CROSSMAP-Public-Key"
   requestIdHeader <- ensureHeader req "X-CROSSMAP-Request-Id"
-  return CommonAuthHeaders {..}
+  return AuthHeaders {..}
 
 
-checkAuth :: State -> CommonAuthHeaders -> PublicKeyType -> Handler SignatureInfo
-checkAuth State{pool=pool} CommonAuthHeaders{..} keyType = do
-  let stringToSign = hostHeader <> "\n" <> requestIdHeader
-  liftIO $ putStrLn $ "User string to sign: " <> show stringToSign
+checkAuth :: State -> AuthHeaders -> PublicKeyType -> Handler SignatureInfo
+checkAuth State{pool=pool} AuthHeaders{..} keyType = do
+  let stringToSign = hostHeader <> "/" <> requestIdHeader
+  liftIO $ putStrLn $ "string to sign: " <> show stringToSign
   signatureInfoHost <- return $ decodeUtf8 hostHeader
   signatureInfoRequestId <- ensureValidUUID requestIdHeader
   signatureInfoPublicKey <- ensureValidPublicKey publicKeyHeader
@@ -90,7 +89,6 @@ checkAuth State{pool=pool} CommonAuthHeaders{..} keyType = do
         then return SignatureInfo
           { signatureInfoHost = signatureInfoHost
           , signatureInfoRequestId = signatureInfoRequestId
-          , signatureInfoPublicKey = signatureInfoPublicKey
           , signatureInfoPublicKeyInfo = publicKeyInfo
           }
         else throwError $ err401 { errBody = "Invalid public key type" }

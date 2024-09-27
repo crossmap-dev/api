@@ -1,0 +1,52 @@
+name: Docker Image
+description: Build and push the Docker image
+inputs:
+  tags:
+    description: 'The tags to apply to the Docker image'
+    required: true
+runs:
+  using: composite
+  steps:
+  - uses: actions/checkout@v4
+
+  - name: Set up Docker Buildx
+    uses: docker/setup-buildx-action@v3
+
+  - name: Download client
+    uses: actions/download-artifact@v4
+    with:
+      name: crossmap-dev
+      path: bin/crossmap-dev
+
+  - name: Download server
+    uses: actions/download-artifact@v4
+    with:
+      name: crossmap-dev-server
+      path: bin/crossmap-dev-server
+
+  - name: Fix paths and permissions
+    run: |
+      mv bin/crossmap-dev crossmap-dev
+      mv bin/crossmap-dev-server crossmap-dev-server
+      mv crossmap-dev/crossmap-dev bin/crossmap-dev
+      mv crossmap-dev-server/crossmap-dev-server bin/crossmap-dev-server
+      chmod +x bin/crossmap-dev
+      chmod +x bin/crossmap-dev-server
+      rmdir crossmap-dev
+      rmdir crossmap-dev-server
+
+  - id: meta
+    name: Docker Metadata
+    uses: docker/metadata-action@v5
+    with:
+      images: images.home.mtaylor.io/crossmap-dev-api
+      tags: ${{ inputs.tags }}
+
+  - name: Build and push
+    uses: docker/build-push-action@v6
+    with:
+      context: .
+      file: Dockerfile
+      platforms: linux/amd64
+      push: true
+      tags: ${{ steps.meta.outputs.tags }}

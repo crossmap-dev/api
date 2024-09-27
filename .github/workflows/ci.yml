@@ -1,0 +1,24 @@
+name: Continuous Integration
+on:
+  workflow_call:
+    inputs:
+      tags:
+        required: true
+jobs:
+  haskell-build:
+    name: Haskell Build
+    runs-on: crossmap-dev-runner-k8s
+    container:
+      image: images.home.mtaylor.io/crossmap-dev-api-build:sha-4f2c0f3
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: ./.github/actions/haskell-build
+  docker-image:
+    name: Docker Image
+    needs: haskell-build
+    runs-on: crossmap-dev-runner-dind
+    steps:
+    - uses: ./.github/actions/docker-image
+      with:
+        tags: ${{ inputs.tags }}

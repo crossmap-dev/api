@@ -108,7 +108,7 @@ jobs:
       name: Docker Metadata
       uses: docker/metadata-action@v5
       with:
-        images: images.home.mtaylor.io/crossmap-dev-api
+        images: images.home.mtaylor.io/crossmap-api
         tags: ${{ inputs.tags }}
 
     - name: Build and push

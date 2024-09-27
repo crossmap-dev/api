@@ -28,10 +28,6 @@ keypairOptions = KeypairCommand
 
 runKeypair :: KeypairCommand -> IO ()
 runKeypair KeypairCommand{..} = do
-  let loginDetails = LoginDetails
-        { username = keypairCommandUsername
-        , password = keypairCommandPassword
-        }
-  (pk, sk) <- keyDerivation loginDetails
+  (pk, sk) <- keyDerivation keypairCommandUsername keypairCommandPassword
   putStrLn $ "Public key: " ++ (unpack $ extractBase64 $ encodeBase64 $ unPublicKey pk)
   putStrLn $ "Secret key: " ++ (unpack $ extractBase64 $ encodeBase64 $ unSecretKey sk)

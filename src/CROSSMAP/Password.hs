@@ -1,7 +1,5 @@
-{-# LANGUAGE RecordWildCards #-}
 module CROSSMAP.Password
-  ( LoginDetails(..)
-  , keyDerivation
+  ( keyDerivation
   ) where
 
 import Crypto.Error
@@ -12,14 +10,8 @@ import Data.Text
 import Data.Text.Encoding
 
 
-data LoginDetails = LoginDetails
-  { username :: Text
-  , password :: Text
-  }
-
-
-keyDerivation :: LoginDetails -> IO (PublicKey, SecretKey)
-keyDerivation LoginDetails{..} = do
+keyDerivation :: Text -> Text -> IO (PublicKey, SecretKey)
+keyDerivation username password = do
   let pass = encodeUtf8 password
   let salt = hashWith SHA256 (encodeUtf8 username)
   seed <- throwCryptoErrorIO $ Crypto.KDF.Argon2.hash options pass salt 32

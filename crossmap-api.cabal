@@ -24,12 +24,15 @@ source-repository head
 library
   exposed-modules:
       CROSSMAP.API
+      CROSSMAP.Client
       CROSSMAP.Client.Command
       CROSSMAP.Client.Command.Keypair
+      CROSSMAP.Client.Command.Login
       CROSSMAP.Index
       CROSSMAP.Login
       CROSSMAP.Password
       CROSSMAP.PublicKey
+      CROSSMAP.SecretKey
       CROSSMAP.Server.API
       CROSSMAP.Server.App
       CROSSMAP.Server.Auth

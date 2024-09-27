@@ -66,8 +66,12 @@ jobs:
           tag=${{ inputs.tag }}
           ./bin/update-repo-tag.sh ${path} ${repo} ${tag}
         fi
-        git commit -a -m "Update crossmap-${{ inputs.env }} to ${tag}"
-        git push origin main
+        if [ -z "$(git status --porcelain)" ]; then
+          echo "No changes to argocd-deployment"
+        else
+          git commit -a -m "Update crossmap-${{ inputs.env }} to ${tag}"
+          git push origin main
+        fi
     - name: ArgoCD Deployment
       shell: bash
       env:

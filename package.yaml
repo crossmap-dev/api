@@ -28,6 +28,7 @@ dependencies:
 - http-client-tls
 - http-types
 - optparse-applicative
+- servant-client
 - servant-server
 - stm
 - text

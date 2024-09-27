@@ -7,6 +7,7 @@ module CROSSMAP.API
   , SecureUserAPI
   , SecureSessionAPI
   , api
+  , loginAPI
   , publicAPI
   , privateAPI
   ) where
@@ -47,6 +48,10 @@ type SessionEndpoint = Get '[JSON] SessionResponse
 
 api :: Proxy API
 api = Proxy
+
+
+loginAPI :: Proxy LoginAPI
+loginAPI = Proxy
 
 
 publicAPI :: Proxy PublicAPI

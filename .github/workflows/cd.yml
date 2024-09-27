@@ -31,6 +31,7 @@ jobs:
       run: git push origin ${{ inputs.tag }}
   argocd-deployment:
     name: ArgoCD Deployment
+    environment: ${{ inputs.env }}
     runs-on: crossmap-dev-runners-k8s
     container:
       image: images.home.mtaylor.io/deployer:0.0.9

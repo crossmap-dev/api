@@ -40,3 +40,4 @@ jobs:
     with:
       env: prod
       tag: ${{ needs.version.outputs.version }}
+    secrets: inherit

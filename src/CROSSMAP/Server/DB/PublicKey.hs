@@ -74,18 +74,32 @@ lookupPublicKey = flip statement lookupPublicKeyStatement
 lookupPublicKeyStatement :: Statement PublicKey (Maybe PublicKeyInfo)
 lookupPublicKeyStatement = Statement sql encoder decoder True where
   sql = "SELECT 'user' as key_type, \
-        \  user_uuid, public_key, created_at, expires_at \
+        \  users_public_keys.user_uuid, \
+        \  users_public_keys.public_key, \
+        \  public_keys.created_at, \
+        \  public_keys.expires_at \
         \FROM \
         \  users_public_keys \
+        \JOIN \
+        \  public_keys \
+        \ON \
+        \  users_public_keys.public_key = public_keys.public_key \
         \WHERE \
-        \  public_key = $1 \
+        \  users_public_keys.public_key = $1 \
         \UNION ALL \
         \SELECT 'session' as key_type, \
-        \  user_uuid, public_key, created_at, expires_at \
+        \  sessions.user_uuid, \
+        \  sessions.public_key, \
+        \  public_keys.created_at, \
+        \  public_keys.expires_at \
         \FROM \
         \  sessions \
+        \JOIN \
+        \  public_keys \
+        \ON \
+        \  sessions.public_key = public_keys.public_key \
         \WHERE \
-        \  public_key = $1"
+        \  sessions.public_key = $1"
   encoder = unPublicKey >$< E.param (E.nonNullable E.bytea)
   decoder = D.rowMaybe publicKeyInfoDecoder
 

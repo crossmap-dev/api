@@ -28,8 +28,16 @@ jobs:
     name: Continuous Integration
     needs: [version]
     uses: ./.github/workflows/ci.yml
+    outputs:
+      tag: ${{ needs.version.outputs.version }}
     with:
       tags: |
         latest
         ${{ needs.version.outputs.version }}
         type=sha
+  cd:
+    name: Continuous Deployment
+    needs: [ci]
+    uses: ./.github/workflows/cd.yml
+    with:
+      tag: ${{ needs.ci.outputs.tag }}

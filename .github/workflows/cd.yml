@@ -1,0 +1,21 @@
+name: Continuous Deployment
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+jobs:
+  git-tag:
+    name: Git Tag
+    runs-on: crossmap-dev-runners-k8s
+    container:
+      image: images.home.mtaylor.io/deployer:0.0.9
+    steps:
+    - uses: actions/checkout@v4
+    - name: Git Tag
+      shell: bash
+      run: git tag -a ${{ github.event.inputs.tag }} -m "Release ${{ github.event.inputs.tag }}"
+    - name: Git Push
+      shell: bash
+      run: git push origin ${{ github.event.inputs.tag }}

@@ -5,10 +5,13 @@ module CROSSMAP.Client.Command
 import Options.Applicative
 
 import CROSSMAP.Client.Command.Keypair
+import CROSSMAP.Client.Command.Login
 
 
 data Command
-  = Keypair KeypairCommand deriving (Show)
+  = Keypair KeypairCommand
+  | Login LoginCommand
+  deriving (Show)
 
 
 newtype Options = Options Command deriving (Show)
@@ -18,6 +21,8 @@ options :: Parser Options
 options = Options <$> hsubparser
   ( command "keypair"
     ( info (Keypair <$> keypairOptions) ( progDesc "Placeholder command" ) )
+  <> command "login"
+      ( info (Login <$> loginOptions) ( progDesc "Placeholder command" ) )
   )
 
 
@@ -32,3 +37,4 @@ run = execParser opts >>= runWithOptions
 
 runWithOptions :: Options -> IO ()
 runWithOptions (Options (Keypair cmd)) = runKeypair cmd
+runWithOptions (Options (Login cmd)) = runLogin cmd

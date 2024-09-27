@@ -99,18 +99,21 @@ runClient client action = SC.runClientM action $ clientEnv client
 
 signRequest :: PublicKey -> SecretKey -> Request -> IO Request
 signRequest pk sk req = do
-  requestId <- nextRandom
-  let stringToSign = authStringToSign req requestId
-  let Signature signature = dsign sk $ encodeUtf8 stringToSign
-  let signatureB64 = extractBase64 $ encodeBase64 signature
-  let req' = req
-        { requestHeaders = requestHeaders req
-          <> [ ("X-CROSSMAP-Request-Id", encodeUtf8 $ toText requestId)
-             , ("X-CROSSMAP-Public-Key", encodeUtf8 $ publicKeyToText pk)
-             , ("Authorization", "Signature " <> (encodeUtf8 $ signatureB64))
-             ]
-        }
-  return req'
+  case lookup "Authorization" $ requestHeaders req of
+    Just _ -> return req
+    Nothing -> do
+      requestId <- nextRandom
+      let stringToSign = authStringToSign req requestId
+      let Signature signature = dsign sk $ encodeUtf8 stringToSign
+      let signatureB64 = extractBase64 $ encodeBase64 signature
+      let req' = req
+            { requestHeaders = requestHeaders req
+              <> [ ("X-CROSSMAP-Request-Id", encodeUtf8 $ toText requestId)
+                 , ("X-CROSSMAP-Public-Key", encodeUtf8 $ publicKeyToText pk)
+                 , ("Authorization", "Signature " <> (encodeUtf8 $ signatureB64))
+                 ]
+            }
+      return req'
 
 
 authStringToSign :: Request -> UUID -> Text

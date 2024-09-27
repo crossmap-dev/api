@@ -11,123 +11,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build
+  version:
+    name: Read Version
     runs-on: crossmap-dev-runners-k8s
-
     container:
-      image: images.home.mtaylor.io/crossmap-dev-api-build:sha-4f2c0f3
-
-    strategy:
-      fail-fast: false
-
+      image: docker.io/debian:bookworm-slim
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: haskell-actions/setup@v2
-        id: setup
-
-      - name: Configure the build
-        run: |
-          cabal configure --enable-tests --enable-benchmarks --disable-documentation
-          cabal build all --dry-run
-        # The last step generates dist-newstyle/cache/plan.json for the cache key.
-
-      - name: Restore cached dependencies
-        uses: actions/cache/restore@v4
-        id: cache
-        env:
-          key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
-        with:
-          path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.key }}-
-
-      - name: Install dependencies
-        # If we had an exact cache hit, the dependencies will be up to date.
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: cabal build all --only-dependencies
-
-      # Cache dependencies already here, so that we do not have to rebuild them should the subsequent steps fail.
-      - name: Save cached dependencies
-        uses: actions/cache/save@v4
-        # If we had an exact cache hit, trying to save the cache would error because of key clash.
-        if: steps.cache.outputs.cache-hit != 'true'
-        with:
-          path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ steps.cache.outputs.cache-primary-key }}
-
-      - name: Build
-        run: cabal install --installdir=bin --install-method=copy --overwrite-policy=always
-
-      - name: Run tests
-        run: cabal test all
-
-      - name: Upload client
-        uses: actions/upload-artifact@v4
-        with:
-          name: crossmap-dev
-          path: bin/crossmap-dev
-
-      - name: Upload server
-        uses: actions/upload-artifact@v4
-        with:
-          name: crossmap-dev-server
-          path: bin/crossmap-dev-server
-
-  docker:
-    name: Docker Build
-    needs: build
-    runs-on: crossmap-dev-runners-dind
-    steps:
-      - uses: actions/checkout@v4
-
-      - id: version
-        name: Get version
-        run: |
-          echo "version=$(tr -d '\n' < VERSION.txt)" >> $GITHUB_OUTPUT
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Download client
-        uses: actions/download-artifact@v4
-        with:
-          name: crossmap-dev
-          path: bin/crossmap-dev
-
-      - name: Download server
-        uses: actions/download-artifact@v4
-        with:
-          name: crossmap-dev-server
-          path: bin/crossmap-dev-server
-
-      - name: Fix paths and permissions
-        run: |
-          mv bin/crossmap-dev crossmap-dev
-          mv bin/crossmap-dev-server crossmap-dev-server
-          mv crossmap-dev/crossmap-dev bin/crossmap-dev
-          mv crossmap-dev-server/crossmap-dev-server bin/crossmap-dev-server
-          chmod +x bin/crossmap-dev
-          chmod +x bin/crossmap-dev-server
-          rmdir crossmap-dev
-          rmdir crossmap-dev-server
-
-      - id: meta
-        name: Docker Metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: images.home.mtaylor.io/crossmap-dev-api
-          tags: |
-            latest
-            ${{ steps.version.outputs.version }}
-            type=sha
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile
-          platforms: linux/amd64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+    - uses: actions/checkout@v4
+    - id: version
+      name: Read version
+      shell: bash
+      run: echo "version=$(tr -d '\n' < VERSION.txt)" >> $GITHUB_OUTPUT
+  ci:
+    name: Continuous Integration
+    needs: [version]
+    uses: ./.github/workflows/ci.yml
+    with:
+      tags: |
+        latest
+        ${{ needs.version.outputs.version }}
+        type=sha

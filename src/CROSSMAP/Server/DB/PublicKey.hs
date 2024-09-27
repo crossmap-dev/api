@@ -35,14 +35,14 @@ lookupPublicKey = flip statement lookupPublicKeyStatement
 
 lookupPublicKeyStatement :: Statement PublicKey (Maybe PublicKeyInfo)
 lookupPublicKeyStatement = Statement sql encoder decoder True where
-  sql = "SELECT 'user' as key_type \
+  sql = "SELECT 'user' as key_type, \
         \  user_uuid, public_key, created_at, expires_at \
         \FROM \
-        \  user_public_keys \
+        \  users_public_keys \
         \WHERE \
         \  public_key = $1 \
         \UNION ALL \
-        \SELECT 'session' as key_type \
+        \SELECT 'session' as key_type, \
         \  user_uuid, public_key, created_at, expires_at \
         \FROM \
         \  sessions \

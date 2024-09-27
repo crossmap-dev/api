@@ -7,6 +7,7 @@ runs:
     id: setup
 
   - name: Configure the build
+    shell: sh
     run: |
       cabal configure --enable-tests --enable-benchmarks --disable-documentation
       cabal build all --dry-run
@@ -25,6 +26,7 @@ runs:
   - name: Install dependencies
     # If we had an exact cache hit, the dependencies will be up to date.
     if: steps.cache.outputs.cache-hit != 'true'
+    shell: sh
     run: cabal build all --only-dependencies
 
   # Cache dependencies already here, so that we do not have to rebuild them should the subsequent steps fail.
@@ -37,9 +39,11 @@ runs:
       key: ${{ steps.cache.outputs.cache-primary-key }}
 
   - name: Build
+    shell: sh
     run: cabal install --installdir=bin --install-method=copy --overwrite-policy=always
 
   - name: Run tests
+    shell: sh
     run: cabal test all
 
   - name: Upload client

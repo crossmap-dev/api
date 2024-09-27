@@ -54,6 +54,7 @@ jobs:
       shell: bash
       run: |
         set -euxo pipefail
+        cd argocd-deployment
         path=home/namespaced/crossmap-${{ inputs.env }}
         if [ -z "${{ inputs.tag }}" ]; then
           tag=sha-$(echo $GITHUB_SHA | cut -c1-7)

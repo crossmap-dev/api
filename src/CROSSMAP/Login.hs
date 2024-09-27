@@ -13,7 +13,7 @@ import CROSSMAP.PublicKey
 
 data LoginRequest = LoginRequest
   { loginRequestUsername :: Text
-  , loginRequestSessionPublicKey :: PublicKeyJSON
+  , loginRequestSessionPublicKey :: Base64PublicKey
   } deriving (Show)
 
 
@@ -32,7 +32,7 @@ instance ToJSON LoginRequest where
 
 
 data LoginResponse = LoginResponse
-  { loginResponseSessionPublicKey :: PublicKeyJSON
+  { loginResponseSessionPublicKey :: Base64PublicKey
   } deriving (Show)
 
 

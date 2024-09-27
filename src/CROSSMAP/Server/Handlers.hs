@@ -31,7 +31,7 @@ loginHandler :: State -> SignatureInfo -> LoginRequest -> Handler LoginResponse
 loginHandler State{..} SignatureInfo{..} loginReq = do
   let PublicKeyInfo{..} = signatureInfoPublicKeyInfo
   let loginUsername = loginRequestUsername loginReq
-  let PublicKeyJSON sessionPublicKey = loginRequestSessionPublicKey loginReq
+  let Base64PublicKey sessionPublicKey = loginRequestSessionPublicKey loginReq
   result <- liftIO $ runQuery pool $ userHasName publicKeyInfoUser loginUsername
   case result of
     Left _ -> throwError err500
@@ -46,7 +46,7 @@ loginHandler State{..} SignatureInfo{..} loginReq = do
         }
       case result' of
         Left _ -> throwError err500
-        Right () -> return $ LoginResponse $ PublicKeyJSON sessionPublicKey
+        Right () -> return $ LoginResponse $ Base64PublicKey sessionPublicKey
 
 
 sessionHandler :: State -> SignatureInfo -> Handler SessionResponse

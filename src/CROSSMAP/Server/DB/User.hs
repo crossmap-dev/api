@@ -4,8 +4,10 @@ module CROSSMAP.Server.DB.User
   , Username(..)
   , UserPublicKey(..)
   , getUser
+  , getUserByUsername
   , getUsernames
   , getUserPublicKeys
+  , insertUser
   , userHasName
   ) where
 
@@ -32,6 +34,28 @@ getUserStatement = Statement sql encoder decoder True where
   sql = "SELECT uuid FROM users WHERE uuid = $1"
   encoder = E.param (E.nonNullable E.uuid)
   decoder = D.rowMaybe (User <$> D.column (D.nonNullable D.uuid))
+
+
+getUserByUsername :: Text -> Transaction (Maybe User)
+getUserByUsername = flip statement getUserByUsernameStatement
+
+
+getUserByUsernameStatement :: Statement Text (Maybe User)
+getUserByUsernameStatement = Statement sql encoder decoder True where
+  sql = "SELECT user_uuid FROM user_names WHERE name = $1"
+  encoder = E.param (E.nonNullable E.text)
+  decoder = D.rowMaybe (User <$> D.column (D.nonNullable D.uuid))
+
+
+insertUser :: User -> Transaction ()
+insertUser = flip statement insertUserStatement
+
+
+insertUserStatement :: Statement User ()
+insertUserStatement = Statement sql encoder decoder False where
+  sql = "INSERT INTO users (uuid) VALUES ($1)"
+  encoder = userId >$< E.param (E.nonNullable E.uuid)
+  decoder = D.noResult
 
 
 data Username = Username { usernameUser :: User, username :: Text } deriving (Eq, Show)

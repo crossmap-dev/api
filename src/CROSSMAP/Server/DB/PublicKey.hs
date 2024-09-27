@@ -51,19 +51,17 @@ insertPublicKeyStatement = Statement sql encoder decoder False where
 insertUserPublicKey :: User -> UTCTime -> UTCTime -> PublicKey -> Transaction ()
 insertUserPublicKey user created expires publicKey = do
   insertPublicKey created expires publicKey
-  statement ((created, expires), (user, publicKey)) insertUserPublicKeyStatement
+  statement (user, publicKey) insertUserPublicKeyStatement
 
 
-insertUserPublicKeyStatement :: Statement ((UTCTime, UTCTime), (User, PublicKey)) ()
+insertUserPublicKeyStatement :: Statement (User, PublicKey) ()
 insertUserPublicKeyStatement = Statement sql encoder decoder False where
   sql = "INSERT INTO users_public_keys \
-        \(created_at, expires_at, user_uuid, public_key) \
-        \VALUES ($1, $2, $3, $4)"
+        \(user_uuid, public_key) \
+        \VALUES ($1, $2)"
   encoder
-    =  ((fst . fst) >$< E.param (E.nonNullable E.timestamptz))
-    <> ((snd . fst) >$< E.param (E.nonNullable E.timestamptz))
-    <> ((userId . fst . snd) >$< E.param (E.nonNullable E.uuid))
-    <> (unPublicKey . snd . snd >$< E.param (E.nonNullable E.bytea))
+    =  ((userId . fst) >$< E.param (E.nonNullable E.uuid))
+    <> (unPublicKey . snd >$< E.param (E.nonNullable E.bytea))
   decoder = D.noResult
 
 

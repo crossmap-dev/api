@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   ci:
+    name: Continuous Integration
     uses: ./.github/workflows/ci.yml
     with:
       tags: |

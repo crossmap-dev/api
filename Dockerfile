@@ -6,4 +6,5 @@ USER crossmap-dev
 ADD bin/crossmap-dev /usr/local/bin/crossmap-dev
 ADD bin/crossmap-dev-server /usr/local/bin/crossmap-dev-server
 ADD migrations /usr/local/share/crossmap-dev/migrations
+ENV MIGRATION_DIR=/usr/local/share/crossmap-dev/migrations
 ENTRYPOINT ["/usr/local/bin/crossmap-dev-server"]

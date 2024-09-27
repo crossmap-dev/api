@@ -33,6 +33,7 @@ library
       CROSSMAP.Server.Command
       CROSSMAP.Server.Config
       CROSSMAP.Server.DB
+      CROSSMAP.Server.DB.Migration
       CROSSMAP.Server.Handlers
       CROSSMAP.Server.Socket
       CROSSMAP.Server.State

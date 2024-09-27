@@ -20,6 +20,7 @@ data Env = Env
   , envPostgresUser :: ByteString
   , envPostgresPass :: ByteString
   , envPostgresDb   :: ByteString
+  , envMigrationDir :: FilePath
   } deriving (Show)
 
 
@@ -32,6 +33,7 @@ envConfig = do
   envPostgresUser <- loadEnv "POSTGRES_USER"
   envPostgresPass <- loadEnv "POSTGRES_PASS"
   envPostgresDb   <- loadEnv "POSTGRES_DB"
+  envMigrationDir <- unpack <$> loadEnv "MIGRATION_DIR"
   return Env{..}
 
 

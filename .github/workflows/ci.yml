@@ -80,6 +80,11 @@ jobs:
         name: target
         path: target
 
+    - name: Fix permissions
+      shell: bash
+      run: |
+        sudo chmod 0755 target/*
+
     - id: meta
       name: Docker Metadata
       uses: docker/metadata-action@v5

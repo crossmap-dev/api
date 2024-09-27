@@ -8,6 +8,8 @@ module CROSSMAP.Server.DB.User
   , getUsernames
   , getUserPublicKeys
   , insertUser
+  , insertUsername
+  , insertUserWithName
   , userHasName
   ) where
 
@@ -23,6 +25,17 @@ import qualified Hasql.Decoders as D
 
 
 newtype User = User { userId :: UUID } deriving (Eq, Show)
+
+
+data Username = Username { usernameUser :: User, username :: Text } deriving (Eq, Show)
+
+
+data UserPublicKey = UserPublicKey
+  { userPublicKey :: PublicKey
+  , userPublicKeyUser :: User
+  , userPublicKeyCreated :: UTCTime
+  , userPublicKeyExpires :: UTCTime
+  } deriving (Eq, Show)
 
 
 getUser :: UUID -> Transaction (Maybe User)
@@ -47,20 +60,6 @@ getUserByUsernameStatement = Statement sql encoder decoder True where
   decoder = D.rowMaybe (User <$> D.column (D.nonNullable D.uuid))
 
 
-insertUser :: User -> Transaction ()
-insertUser = flip statement insertUserStatement
-
-
-insertUserStatement :: Statement User ()
-insertUserStatement = Statement sql encoder decoder False where
-  sql = "INSERT INTO users (uuid) VALUES ($1)"
-  encoder = userId >$< E.param (E.nonNullable E.uuid)
-  decoder = D.noResult
-
-
-data Username = Username { usernameUser :: User, username :: Text } deriving (Eq, Show)
-
-
 getUsernames :: User -> Transaction [Username]
 getUsernames = flip statement getUsernamesStatement
 
@@ -75,12 +74,35 @@ getUsernamesStatement = Statement sql encoder decoder True where
     <*> D.column (D.nonNullable D.text)
 
 
-data UserPublicKey = UserPublicKey
-  { userPublicKey :: PublicKey
-  , userPublicKeyUser :: User
-  , userPublicKeyCreated :: UTCTime
-  , userPublicKeyExpires :: UTCTime
-  } deriving (Eq, Show)
+insertUser :: User -> Transaction ()
+insertUser = flip statement insertUserStatement
+
+
+insertUserStatement :: Statement User ()
+insertUserStatement = Statement sql encoder decoder False where
+  sql = "INSERT INTO users (uuid) VALUES ($1)"
+  encoder = userId >$< E.param (E.nonNullable E.uuid)
+  decoder = D.noResult
+
+
+insertUsername :: Username -> Transaction ()
+insertUsername = flip statement insertUsernameStatement
+
+
+insertUsernameStatement :: Statement Username ()
+insertUsernameStatement = Statement sql encoder decoder False where
+  sql = "INSERT INTO user_names (user_uuid, name) VALUES ($1, $2)"
+  encoder :: E.Params Username
+  encoder
+    =  ((userId . usernameUser) >$< E.param (E.nonNullable E.uuid))
+    <> (username >$< E.param (E.nonNullable E.text))
+  decoder = D.noResult
+
+
+insertUserWithName :: User -> Text -> Transaction ()
+insertUserWithName user name = do
+  insertUser user
+  insertUsername (Username user name)
 
 
 getUserPublicKeys :: User -> Transaction [UserPublicKey]

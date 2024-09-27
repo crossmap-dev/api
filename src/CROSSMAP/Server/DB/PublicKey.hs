@@ -5,6 +5,7 @@ module CROSSMAP.Server.DB.PublicKey
   , PublicKeyInfo(..)
   , insertPublicKey
   , lookupPublicKey
+  , insertUserPublicKey
   ) where
 
 import Crypto.Sign.Ed25519 (PublicKey(..))
@@ -44,6 +45,25 @@ insertPublicKeyStatement = Statement sql encoder decoder False where
     =  ((fst . fst) >$< E.param (E.nonNullable E.timestamptz))
     <> ((snd . fst) >$< E.param (E.nonNullable E.timestamptz))
     <> (unPublicKey . snd >$< E.param (E.nonNullable E.bytea))
+  decoder = D.noResult
+
+
+insertUserPublicKey :: User -> UTCTime -> UTCTime -> PublicKey -> Transaction ()
+insertUserPublicKey user created expires publicKey = do
+  insertPublicKey created expires publicKey
+  statement ((created, expires), (user, publicKey)) insertUserPublicKeyStatement
+
+
+insertUserPublicKeyStatement :: Statement ((UTCTime, UTCTime), (User, PublicKey)) ()
+insertUserPublicKeyStatement = Statement sql encoder decoder False where
+  sql = "INSERT INTO users_public_keys \
+        \(created_at, expires_at, user_uuid, public_key) \
+        \VALUES ($1, $2, $3, $4)"
+  encoder
+    =  ((fst . fst) >$< E.param (E.nonNullable E.timestamptz))
+    <> ((snd . fst) >$< E.param (E.nonNullable E.timestamptz))
+    <> ((userId . fst . snd) >$< E.param (E.nonNullable E.uuid))
+    <> (unPublicKey . snd . snd >$< E.param (E.nonNullable E.bytea))
   decoder = D.noResult
 
 

@@ -6,10 +6,14 @@ module CROSSMAP.Server.Config
   , envConfig
   ) where
 
+import Crypto.Sign.Ed25519 (PublicKey)
 import Data.ByteString (ByteString)
 import Data.ByteString.Char8 (pack, unpack)
+import Data.Text (pack)
 import Data.Word (Word16)
 import System.Environment (lookupEnv)
+
+import CROSSMAP.PublicKey
 
 
 data Env = Env
@@ -21,6 +25,7 @@ data Env = Env
   , envPostgresPass :: ByteString
   , envPostgresDb   :: ByteString
   , envMigrationDir :: FilePath
+  , envPublicKey    :: PublicKey
   } deriving (Show)
 
 
@@ -34,13 +39,22 @@ envConfig = do
   envPostgresPass <- loadEnv "POSTGRES_PASS"
   envPostgresDb   <- loadEnv "POSTGRES_DB"
   envMigrationDir <- unpack <$> loadEnv "MIGRATION_DIR"
+  envPublicKey    <- loadEnvPublicKey "PUBLIC_KEY"
   return Env{..}
 
 
 loadEnv :: String -> IO ByteString
 loadEnv name = lookupEnv name >>= \case
-  Just value -> return $ pack value
+  Just value -> return $ Data.ByteString.Char8.pack value
   Nothing    -> error $ "Environment variable not set: " ++ name
+
+
+loadEnvPublicKey :: String -> IO PublicKey
+loadEnvPublicKey name = lookupEnv name >>= \case
+  Nothing -> error $ "Environment variable not set: " ++ name
+  Just value -> case publicKeyFromText (Data.Text.pack value) of
+    Just pk -> return $ pk
+    Nothing -> error $ "Invalid public key: " ++ value
 
 
 readEnv :: Read a => String -> IO a

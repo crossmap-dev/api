@@ -45,5 +45,5 @@ runWithOptionsAndEnv opts env = do
   pool <- connect env
   let state = new pool (optVerbose opts)
   migrate (envMigrationDir env) pool
-  serverInit state
+  serverInit state (envPublicKey env)
   Warp.run (envPort env) (app state)

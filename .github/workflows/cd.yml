@@ -17,8 +17,8 @@ jobs:
       image: images.home.mtaylor.io/deployer:0.0.9
     steps:
     - uses: actions/checkout@v4
-    - name: "Configure git"
-      shell: "bash"
+    - name: Configure git
+      shell: bash
       run: |
         git config --global user.email "githubactions@crossmap.dev"
         git config --global user.name "GitHub Actions"
@@ -37,26 +37,26 @@ jobs:
       image: images.home.mtaylor.io/deployer:0.0.9
     steps:
     - uses: actions/checkout@v4
-    - name: "Configure git"
-      shell: "bash"
+    - name: Configure git
+      shell: bash
       run: |
         git config --global user.email "githubactions@crossmap.dev"
         git config --global user.name "GitHub Actions"
         git config --global --add safe.directory $GITHUB_WORKSPACE
-    - name: "Checkout argocd-deployment"
-      uses: "actions/checkout@v4"
+    - name: Checkout argocd-deployment
+      uses: actions/checkout@v4
       with:
-        repository: "mtaylor91/argocd-deployment"
-        ref: "main"
+        path: argocd-deployment
+        repository: mtaylor91/argocd-deployment
+        ref: main
         ssh-key: ${{ secrets.ARGOCD_DEPLOYMENT_SSH_PRIVATE_KEY }}
-    - name: "Update argocd-deployment"
-      shell: "bash"
+    - name: Update argocd-deployment
+      shell: bash
       run: |
         set -euxo pipefail
         path=home/namespaced/crossmap-${{ inputs.env }}
         if [ -z "${{ inputs.tag }}" ]; then
-          sha=$(git rev-parse --short HEAD)
-          tag=sha-${sha}
+          tag=sha-$(echo $GITHUB_SHA | cut -c1-7)
           pushd ${path}
           kustomize edit set image images.home.mtaylor.io/crossmap-api:${tag}
           popd
@@ -70,7 +70,7 @@ jobs:
     - name: ArgoCD Deployment
       shell: bash
       env:
-        ARGOCD_SERVER: "argocd.crossmap.dev"
+        ARGOCD_SERVER: argocd.crossmap.dev
         ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
       run: |
         set -euxo pipefail

@@ -36,6 +36,11 @@ spec:
             secretKeyRef:
               name: crossmap-api
               key: POSTGRES_PASS
+        - name: PUBLIC_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: crossmap-api
+              key: PUBLIC_KEY
         ports:
         - name: http
           protocol: TCP

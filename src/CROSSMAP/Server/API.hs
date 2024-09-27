@@ -14,7 +14,7 @@ server state = publicServer state :<|> loginServer state :<|> secureServer state
 
 
 publicServer :: State -> Server PublicAPI
-publicServer _ = indexHandler
+publicServer = indexHandler
 
 
 loginServer :: State -> Server SecureUserAPI

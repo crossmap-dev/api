@@ -14,8 +14,8 @@ import CROSSMAP.Server.Auth
 import CROSSMAP.Server.State
 
 
-indexHandler :: Handler IndexResponse
-indexHandler = return $ IndexResponse "CROSSMAP"
+indexHandler :: State -> Handler IndexResponse
+indexHandler _ = return $ IndexResponse "CROSSMAP"
 
 
 loginHandler :: State -> UserSignature -> LoginRequest -> Handler LoginResponse

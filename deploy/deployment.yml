@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crossmap-dev-api
+spec:
+  template:
+    spec:
+      containers:
+      - name: api
+        image: images.home.mtaylor.io/crossmap-dev-api
+        env:
+        - name: PORT
+          value: "8080"
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: crossmap-dev-api
+              key: POSTGRES_DB
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: crossmap-dev-api
+              key: POSTGRES_HOST
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: crossmap-dev-api
+              key: POSTGRES_PORT
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: crossmap-dev-api
+              key: POSTGRES_USER
+        - name: POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: crossmap-dev-api
+              key: POSTGRES_PASS
+        ports:
+        - name: http
+          protocol: TCP
+          containerPort: 8080
+        readinessProbe:
+          periodSeconds: 5
+          initialDelaySeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+          timeoutSeconds: 1
+          httpGet:
+            port: 8080
+            path: /

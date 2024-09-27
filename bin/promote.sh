@@ -5,7 +5,7 @@ set -euxo pipefail
 git checkout main
 
 # Merge develop into main
-git merge -s ort -X theirs develop
+git merge -s ort -X theirs develop -m "Merge develop into main"
 
 # Read the version from the VERSION.txt file
 VERSION=$(tr -d '\n' < VERSION.txt)

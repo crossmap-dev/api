@@ -75,7 +75,7 @@ jobs:
     - name: ArgoCD Deployment
       shell: bash
       env:
-        ARGOCD_SERVER: argocd.crossmap.dev
+        ARGOCD_SERVER: argocd.mtaylor.io
         ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
       run: |
         set -euxo pipefail

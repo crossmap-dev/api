@@ -27,6 +27,7 @@ library
       CROSSMAP.Client.Command
       CROSSMAP.Index
       CROSSMAP.Login
+      CROSSMAP.PublicKey
       CROSSMAP.Server.API
       CROSSMAP.Server.App
       CROSSMAP.Server.Auth
@@ -35,6 +36,7 @@ library
       CROSSMAP.Server.DB
       CROSSMAP.Server.DB.Migration
       CROSSMAP.Server.DB.PublicKey
+      CROSSMAP.Server.DB.Session
       CROSSMAP.Server.DB.User
       CROSSMAP.Server.Handlers
       CROSSMAP.Server.Socket

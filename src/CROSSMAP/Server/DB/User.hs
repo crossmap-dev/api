@@ -6,6 +6,7 @@ module CROSSMAP.Server.DB.User
   , getUser
   , getUsernames
   , getUserPublicKeys
+  , userHasName
   ) where
 
 import Crypto.Sign.Ed25519 (PublicKey(..))
@@ -73,3 +74,9 @@ getUserPublicKeysStatement = Statement sql encoder decoder True where
     <*> (User <$> D.column (D.nonNullable D.uuid))
     <*> D.column (D.nonNullable D.timestamptz)
     <*> D.column (D.nonNullable D.timestamptz)
+
+
+userHasName :: User -> Text -> Transaction Bool
+userHasName user name = do
+  names <- getUsernames user
+  return $ any ((== name) . username) names

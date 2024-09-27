@@ -8,7 +8,7 @@ on:
 jobs:
   haskell-build:
     name: Haskell Build
-    runs-on: crossmap-dev-runner-k8s
+    runs-on: crossmap-dev-runners-k8s
     container:
       image: images.home.mtaylor.io/crossmap-dev-api-build:sha-4f2c0f3
     strategy:
@@ -18,7 +18,7 @@ jobs:
   docker-image:
     name: Docker Image
     needs: haskell-build
-    runs-on: crossmap-dev-runner-dind
+    runs-on: crossmap-dev-runners-dind
     steps:
     - uses: ./.github/actions/docker-image
       with:

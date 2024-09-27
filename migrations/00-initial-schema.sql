@@ -1,3 +1,9 @@
+CREATE TABLE IF NOT EXISTS "public_keys" (
+  "public_key" BYTEA PRIMARY KEY,
+  "created_at" TIMESTAMP NOT NULL,
+  "expires_at" TIMESTAMP NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS "users" (
   "uuid" UUID PRIMARY KEY
 );
@@ -11,8 +17,7 @@ CREATE TABLE IF NOT EXISTS "users_names" (
 CREATE TABLE IF NOT EXISTS "users_public_keys" (
   "public_key" BYTEA PRIMARY KEY,
   "user_uuid" UUID NOT NULL,
-  "created_at" TIMESTAMP NOT NULL,
-  "expires_at" TIMESTAMP NOT NULL,
+  FOREIGN KEY ("public_key") REFERENCES "public_keys" ("public_key") ON DELETE CASCADE,
   FOREIGN KEY ("user_uuid") REFERENCES "users" ("uuid") ON DELETE CASCADE
 );
 
@@ -72,10 +77,9 @@ CREATE TABLE IF NOT EXISTS "groups_policies" (
 
 CREATE TABLE IF NOT EXISTS "sessions" (
   "public_key" BYTEA PRIMARY KEY,
-  "address" INET NOT NULL,
   "user_uuid" UUID NOT NULL,
-  "created_at" TIMESTAMP NOT NULL,
-  "expires_at" TIMESTAMP NOT NULL,
+  "address" INET NOT NULL,
+  FOREIGN KEY ("public_key") REFERENCES "public_keys" ("public_key") ON DELETE CASCADE,
   FOREIGN KEY ("user_uuid") REFERENCES "users" ("uuid") ON DELETE CASCADE
 );
 

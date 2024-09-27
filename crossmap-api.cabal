@@ -27,6 +27,7 @@ library
       CROSSMAP.Client.Command
       CROSSMAP.Index
       CROSSMAP.Login
+      CROSSMAP.Password
       CROSSMAP.PublicKey
       CROSSMAP.Server.API
       CROSSMAP.Server.App
@@ -57,6 +58,7 @@ library
     , bytestring
     , case-insensitive
     , containers
+    , cryptonite
     , ed25519
     , hasql
     , hasql-migration
@@ -66,7 +68,6 @@ library
     , http-client-tls
     , http-types
     , optparse-applicative
-    , password
     , servant-server
     , stm
     , text
@@ -96,6 +97,7 @@ executable crossmap
     , case-insensitive
     , containers
     , crossmap-api
+    , cryptonite
     , ed25519
     , hasql
     , hasql-migration
@@ -105,7 +107,6 @@ executable crossmap
     , http-client-tls
     , http-types
     , optparse-applicative
-    , password
     , servant-server
     , stm
     , text
@@ -135,6 +136,7 @@ executable crossmap-server
     , case-insensitive
     , containers
     , crossmap-api
+    , cryptonite
     , ed25519
     , hasql
     , hasql-migration
@@ -144,7 +146,6 @@ executable crossmap-server
     , http-client-tls
     , http-types
     , optparse-applicative
-    , password
     , servant-server
     , stm
     , text

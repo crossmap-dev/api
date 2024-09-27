@@ -18,6 +18,7 @@ dependencies:
 - bytestring
 - case-insensitive
 - containers
+- cryptonite
 - ed25519
 - hasql
 - hasql-migration
@@ -27,7 +28,6 @@ dependencies:
 - http-client-tls
 - http-types
 - optparse-applicative
-- password
 - servant-server
 - stm
 - text

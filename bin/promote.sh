@@ -5,7 +5,7 @@ set -euxo pipefail
 git checkout main
 
 # Merge develop into main
-git merge develop
+git merge -s ort -X theirs develop
 
 # Read the version from the VERSION.txt file
 VERSION=$(tr -d '\n' < VERSION.txt)
@@ -14,3 +14,8 @@ VERSION=$(tr -d '\n' < VERSION.txt)
 pushd deploy
 kustomize edit set image images.home.mtaylor.io/crossmap-dev-api:${VERSION}
 popd
+git add deploy/kustomization.yaml
+git commit -m "Update image tag to ${VERSION}"
+
+# Push the changes to the main branch
+git push origin main

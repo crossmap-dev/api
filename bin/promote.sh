@@ -22,7 +22,7 @@ git push origin main
 
 # Merge main back into develop
 git checkout develop
-git merge -s ort -X ours main -m "Release ${VERSION}"
+git merge -s ours main -m "Release ${VERSION}"
 
 # Push the changes to the develop branch
 git push origin develop

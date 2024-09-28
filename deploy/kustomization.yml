@@ -12,3 +12,6 @@ configMapGenerator:
 - name: crossmap-api
 secretGenerator:
 - name: crossmap-api
+images:
+- name: images.home.mtaylor.io/crossmap-api
+  newTag: 0.0.7

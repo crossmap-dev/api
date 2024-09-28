@@ -19,3 +19,7 @@ git commit -m "Update image tag to ${VERSION}"
 
 # Push the changes to the main branch
 git push origin main
+
+# Merge main back into develop
+git checkout develop
+git merge -s ort -X ours main -m "Release ${VERSION}"

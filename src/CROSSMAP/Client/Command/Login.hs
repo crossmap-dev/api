@@ -9,6 +9,7 @@ import Data.Text
 import Options.Applicative
 
 import CROSSMAP.Client
+import CROSSMAP.Client.State
 import CROSSMAP.PublicKey
 
 
@@ -31,3 +32,4 @@ runLogin LoginCommand{..} = do
   client <- newSession loginCommandURL loginCommandUsername loginCommandPassword
   putStrLn $ "User public key: " ++ unpack (publicKeyToText (clientUserPublicKey client))
   putStrLn $ "Session public key: " ++ unpack (publicKeyToText (clientSessionPublicKey client))
+  saveState $ clientToState client

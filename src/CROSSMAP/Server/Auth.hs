@@ -23,6 +23,7 @@ import Servant
 import Servant.Server.Experimental.Auth
 
 import CROSSMAP.Auth
+import CROSSMAP.PublicKey
 import CROSSMAP.Server.DB
 import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.State
@@ -124,9 +125,9 @@ ensureValidUUID bs = case fromText $ decodeUtf8 bs of
 
 
 ensureValidPublicKey :: ByteString -> Handler PublicKey
-ensureValidPublicKey bs = if Data.ByteString.length bs == 32
-  then return $ PublicKey bs
-  else throwError $ err401 { errBody = "Invalid public key" }
+ensureValidPublicKey bs = case publicKeyFromText $ decodeUtf8 bs of
+  Just publicKey -> return publicKey
+  Nothing -> throwError $ err401 { errBody = "Invalid public key: " <> fromStrict bs }
 
 
 ensureValidSignature :: ByteString -> ByteString -> PublicKey -> Handler ()

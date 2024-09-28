@@ -33,7 +33,7 @@ run = execParser opts >>= runWithOptions
     opts = info (helper <*> options)
       ( fullDesc
      <> progDesc "CROSSMAP API server"
-     <> header "crossmap-dev-server" )
+     <> header "crossmap-server" )
 
 
 runWithOptions :: Options -> IO ()

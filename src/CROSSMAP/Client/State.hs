@@ -1,13 +1,18 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 module CROSSMAP.Client.State
   ( State(..)
   , clientToState
+  , loadStateFilePath
   , loadSessionFromState
   , loadState
   , saveState
   ) where
 
+import Data.Aeson
 import Data.Text
+import System.Environment.XDG.BaseDir
+import System.Directory
 
 import CROSSMAP.Client
 import CROSSMAP.PublicKey
@@ -22,6 +27,27 @@ data State = State
   , stateSessionPublicKey :: Text
   , stateSessionSecretKey :: Text
   } deriving (Show)
+
+
+instance FromJSON State where
+  parseJSON = withObject "State" $ \o -> State
+    <$> o .: "url"
+    <*> o .: "username"
+    <*> o .: "userPublicKey"
+    <*> o .: "userSecretKey"
+    <*> o .: "sessionPublicKey"
+    <*> o .: "sessionSecretKey"
+
+
+instance ToJSON State where
+  toJSON State{..} = object
+    [ "url" .= stateURL
+    , "username" .= stateUsername
+    , "userPublicKey" .= stateUserPublicKey
+    , "userSecretKey" .= stateUserSecretKey
+    , "sessionPublicKey" .= stateSessionPublicKey
+    , "sessionSecretKey" .= stateSessionSecretKey
+    ]
 
 
 clientToState :: Client -> State
@@ -42,15 +68,37 @@ loadSessionFromState State{..} =
     stateSessionPublicKey stateSessionSecretKey
 
 
+loadStateFilePath :: IO FilePath
+loadStateFilePath = do
+  dataDir <- getUserDataDir "crossmap"
+  let stateFilePath = dataDir ++ "/state.json"
+  createDirectoryIfMissing True dataDir
+  pure stateFilePath
+
+
 loadState :: IO (Maybe State)
 loadState = do
   putStrLn "Loading state..."
-  putStrLn "TODO: Implement loading state..."
-  pure Nothing
+  stateFilePath <- loadStateFilePath
+  exists <- doesFileExist stateFilePath
+  if exists
+    then do
+      state <- decodeFileStrict stateFilePath
+      case state of
+        Just s -> do
+          putStrLn "State loaded."
+          pure $ Just s
+        Nothing -> do
+          putStrLn "State file is corrupted."
+          pure Nothing
+    else do
+      putStrLn "State file does not exist."
+      pure Nothing
 
 
 saveState :: State -> IO ()
-saveState _ = do
+saveState s = do
   putStrLn "Saving state..."
-  putStrLn "TODO: Implement saving state..."
+  stateFilePath <- loadStateFilePath
+  encodeFile stateFilePath s
   pure ()

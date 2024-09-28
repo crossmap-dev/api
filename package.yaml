@@ -20,7 +20,9 @@ dependencies:
 - containers
 - crypton
 - data-textual
+- directory
 - ed25519
+- filepath
 - hasql
 - hasql-migration
 - hasql-pool
@@ -42,6 +44,7 @@ dependencies:
 - wai-websockets
 - warp
 - websockets
+- xdg-basedir
 
 ghc-options:
 - -Wall

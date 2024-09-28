@@ -30,6 +30,7 @@ library
       CROSSMAP.Client.Command
       CROSSMAP.Client.Command.Keypair
       CROSSMAP.Client.Command.Login
+      CROSSMAP.Client.Command.Session
       CROSSMAP.Client.State
       CROSSMAP.Index
       CROSSMAP.Login
@@ -67,7 +68,9 @@ library
     , containers
     , crypton
     , data-textual
+    , directory
     , ed25519
+    , filepath
     , hasql
     , hasql-migration
     , hasql-pool
@@ -89,6 +92,7 @@ library
     , wai-websockets
     , warp
     , websockets
+    , xdg-basedir
   default-language: Haskell2010
 
 executable crossmap
@@ -110,7 +114,9 @@ executable crossmap
     , crossmap-api
     , crypton
     , data-textual
+    , directory
     , ed25519
+    , filepath
     , hasql
     , hasql-migration
     , hasql-pool
@@ -132,6 +138,7 @@ executable crossmap
     , wai-websockets
     , warp
     , websockets
+    , xdg-basedir
   default-language: Haskell2010
 
 executable crossmap-server
@@ -153,7 +160,9 @@ executable crossmap-server
     , crossmap-api
     , crypton
     , data-textual
+    , directory
     , ed25519
+    , filepath
     , hasql
     , hasql-migration
     , hasql-pool
@@ -175,4 +184,5 @@ executable crossmap-server
     , wai-websockets
     , warp
     , websockets
+    , xdg-basedir
   default-language: Haskell2010

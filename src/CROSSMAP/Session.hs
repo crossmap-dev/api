@@ -5,19 +5,33 @@ module CROSSMAP.Session
   ) where
 
 import Data.Aeson
+import Data.Time
 import Data.UUID
+
+import CROSSMAP.PublicKey
 
 
 data SessionResponse = SessionResponse
-  { sessionResponseSessionId :: UUID
+  { sessionResponseSessionUser :: UUID
+  , sessionResponseSessionPublicKey :: Base64PublicKey
+  , sessionResponseSessionCreatedAt :: UTCTime
+  , sessionResponseSessionExpiresAt :: UTCTime
   } deriving (Show)
 
 
 instance FromJSON SessionResponse where
   parseJSON = withObject "SessionResponse" $ \o -> do
-    sessionResponseSessionId <- o .: "sessionId"
+    sessionResponseSessionUser <- o .: "sessionUser"
+    sessionResponseSessionPublicKey <- o .: "sessionPublicKey"
+    sessionResponseSessionCreatedAt <- o .: "sessionCreatedAt"
+    sessionResponseSessionExpiresAt <- o .: "sessionExpiresAt"
     return SessionResponse{..}
 
 
 instance ToJSON SessionResponse where
-  toJSON SessionResponse{..} = object [ "sessionId" .= sessionResponseSessionId ]
+  toJSON SessionResponse{..} = object
+    [ "sessionUser" .= sessionResponseSessionUser
+    , "sessionPublicKey" .= sessionResponseSessionPublicKey
+    , "sessionCreatedAt" .= sessionResponseSessionCreatedAt
+    , "sessionExpiresAt" .= sessionResponseSessionExpiresAt
+    ]

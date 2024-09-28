@@ -9,7 +9,6 @@ module CROSSMAP.Server.Handlers
 import Control.Monad.IO.Class
 import Data.IP
 import Data.Time.Clock
-import Data.UUID
 import Network.Socket
 import Servant
 
@@ -57,4 +56,13 @@ loginHandler State{..} SignatureInfo{..} loginReq = do
 
 
 sessionHandler :: State -> SignatureInfo -> Handler SessionResponse
-sessionHandler _ _ = return $ SessionResponse nil
+sessionHandler _ SignatureInfo{..} = return $ SessionResponse
+  { sessionResponseSessionUser =
+    userId $ publicKeyInfoUser signatureInfoPublicKeyInfo
+  , sessionResponseSessionPublicKey =
+    Base64PublicKey $ publicKeyInfoPublicKey signatureInfoPublicKeyInfo
+  , sessionResponseSessionCreatedAt =
+    publicKeyInfoCreated signatureInfoPublicKeyInfo
+  , sessionResponseSessionExpiresAt =
+    publicKeyInfoExpires signatureInfoPublicKeyInfo
+  }

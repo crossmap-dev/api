@@ -61,13 +61,25 @@ loginHandler State{..} SignatureInfo{..} loginReq = do
 
 
 sessionHandler :: State -> SignatureInfo -> Handler SessionResponse
-sessionHandler _ SignatureInfo{..} = return $ SessionResponse
-  { sessionResponseSessionUser =
-    userId $ publicKeyInfoUser signatureInfoPublicKeyInfo
-  , sessionResponseSessionPublicKey =
-    Base64PublicKey $ publicKeyInfoPublicKey signatureInfoPublicKeyInfo
-  , sessionResponseSessionCreatedAt =
-    publicKeyInfoCreated signatureInfoPublicKeyInfo
-  , sessionResponseSessionExpiresAt =
-    publicKeyInfoExpires signatureInfoPublicKeyInfo
-  }
+sessionHandler _ SignatureInfo{..} = do
+  ensureSession signatureInfoPublicKeyInfo
+  return $ SessionResponse
+    { sessionResponseSessionUser =
+      userId $ publicKeyInfoUser signatureInfoPublicKeyInfo
+    , sessionResponseSessionPublicKey =
+      Base64PublicKey $ publicKeyInfoPublicKey signatureInfoPublicKeyInfo
+    , sessionResponseSessionCreatedAt =
+      publicKeyInfoCreated signatureInfoPublicKeyInfo
+    , sessionResponseSessionExpiresAt =
+      publicKeyInfoExpires signatureInfoPublicKeyInfo
+    }
+
+
+ensureSession :: PublicKeyInfo -> Handler ()
+ensureSession PublicKeyInfo{..} = do
+  now <- liftIO getCurrentTime
+  case publicKeyInfoType of
+    UserKey -> throwError err401 { errBody = "Not logged in" }
+    SessionKey -> if now < publicKeyInfoExpires
+      then return ()
+      else throwError err401 { errBody = "Session expired" }

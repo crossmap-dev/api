@@ -31,10 +31,10 @@ type LoginAPI = "login" :> LoginEndpoint
 type PrivateAPI = "session" :> SessionEndpoint
 
 
-type SecureUserAPI = AuthProtect "user-signature" :> LoginAPI
+type SecureUserAPI = AuthProtect "signature" :> LoginAPI
 
 
-type SecureSessionAPI = AuthProtect "session-signature" :> PrivateAPI
+type SecureSessionAPI = AuthProtect "signature" :> PrivateAPI
 
 
 type IndexEndpoint = Get '[JSON] IndexResponse

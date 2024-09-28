@@ -45,28 +45,17 @@ data AuthHeaders = AuthHeaders
   } deriving (Eq, Show)
 
 
-type instance AuthServerData (AuthProtect "user-signature") = SignatureInfo
+type instance AuthServerData (AuthProtect "signature") = SignatureInfo
 
 
-type instance AuthServerData (AuthProtect "session-signature") = SignatureInfo
+authContext :: State -> Context (AuthHandler Request SignatureInfo ': '[])
+authContext state = authHandler state :. EmptyContext
 
 
-authContext ::
-  State ->
-    Context (AuthHandler Request SignatureInfo ': AuthHandler Request SignatureInfo ': '[])
-authContext state = userAuthHandler state :. sessionAuthHandler state :. EmptyContext
-
-
-userAuthHandler :: State -> AuthHandler Request SignatureInfo
-userAuthHandler state = mkAuthHandler $ \req -> do
+authHandler :: State -> AuthHandler Request SignatureInfo
+authHandler state = mkAuthHandler $ \req -> do
   authHeaders <- ensureCommonAuthHeaders req
-  checkAuth state authHeaders req UserKey
-
-
-sessionAuthHandler :: State -> AuthHandler Request SignatureInfo
-sessionAuthHandler state = mkAuthHandler $ \req -> do
-  authHeaders <- ensureCommonAuthHeaders req
-  checkAuth state authHeaders req SessionKey
+  checkAuth state authHeaders req
 
 
 ensureCommonAuthHeaders :: Request -> Handler AuthHeaders
@@ -82,8 +71,8 @@ ensureCommonAuthHeaders req = do
   return AuthHeaders {..}
 
 
-checkAuth :: State -> AuthHeaders -> Request -> PublicKeyType -> Handler SignatureInfo
-checkAuth State{pool=pool} AuthHeaders{..} req keyType = do
+checkAuth :: State -> AuthHeaders -> Request -> Handler SignatureInfo
+checkAuth State{pool=pool} AuthHeaders{..} req = do
   signatureInfoHost <- return $ decodeUtf8 hostHeader
   signatureInfoRequestId <- ensureValidUUID requestIdHeader
   signatureInfoPublicKey <- ensureValidPublicKey publicKeyHeader
@@ -97,15 +86,13 @@ checkAuth State{pool=pool} AuthHeaders{..} req keyType = do
   ensureValidSignature authHeader stringToSign' signatureInfoPublicKey
   result <- liftIO $ runQuery pool $ lookupPublicKey signatureInfoPublicKey
   case result of
-    Right (Just publicKeyInfo) -> do
-      if publicKeyInfoType publicKeyInfo == keyType
-        then return SignatureInfo
-          { signatureInfoHost = signatureInfoHost
-          , signatureInfoRequestId = signatureInfoRequestId
-          , signatureInfoPublicKeyInfo = publicKeyInfo
-          , signatureInfoSocketAddr = remoteHost req
-          }
-        else throwError $ err401 { errBody = "Invalid public key type" }
+    Right (Just publicKeyInfo) ->
+      return $ SignatureInfo
+        { signatureInfoHost = signatureInfoHost
+        , signatureInfoRequestId = signatureInfoRequestId
+        , signatureInfoPublicKeyInfo = publicKeyInfo
+        , signatureInfoSocketAddr = remoteHost req
+        }
     Right Nothing -> throwError $ err401 { errBody = "Public key not found" }
     Left _ -> throwError $ err500 { errBody = "Database error" }
 

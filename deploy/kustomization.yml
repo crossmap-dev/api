@@ -3,8 +3,6 @@ kind: Kustomization
 images:
 - name: images.home.mtaylor.io/crossmap-api
   newTag: 0.0.3
-- name: images.home.mtaylor.io/crossmap-dev-api
-  newTag: 0.0.2
 labels:
 - includeSelectors: true
   pairs:

@@ -54,7 +54,7 @@ newSession url username password = do
   let loginEnv = SC.mkClientEnv loginManager url'
   let loginRequest = LoginRequest
         { loginRequestUsername = username
-        , loginRequestSessionPublicKey = Base64PublicKey userPK
+        , loginRequestSessionPublicKey = Base64PublicKey sessionPK
         }
   response <- SC.runClientM (loginClient loginRequest) loginEnv
   case response of

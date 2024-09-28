@@ -112,6 +112,7 @@ signRequest pk sk req = do
               <> [ ("X-CROSSMAP-Request-Id", encodeUtf8 $ toText requestId)
                  , ("X-CROSSMAP-Public-Key", encodeUtf8 $ publicKeyToText pk)
                  , ("Authorization", "Signature " <> (encodeUtf8 $ signatureB64))
+                 , ("User-Agent", "CROSSMAP Haskell Client" )
                  ]
             }
       return req'

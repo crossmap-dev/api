@@ -52,7 +52,12 @@ loginHandler State{..} SignatureInfo{..} loginReq = do
         }
       case result' of
         Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
-        Right () -> return $ LoginResponse $ Base64PublicKey sessionPublicKey
+        Right () -> return $ LoginResponse
+          { loginResponseSessionUser = userId publicKeyInfoUser
+          , loginResponseSessionPublicKey = Base64PublicKey sessionPublicKey
+          , loginResponseSessionCreatedAt = now
+          , loginResponseSessionExpiresAt = expires
+          }
 
 
 sessionHandler :: State -> SignatureInfo -> Handler SessionResponse

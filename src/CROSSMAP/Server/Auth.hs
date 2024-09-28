@@ -13,7 +13,7 @@ import Crypto.Sign.Ed25519
 import Data.ByteString
 import Data.ByteString.Base64
 import Data.CaseInsensitive (original)
-import Data.Text (Text)
+import Data.Text (Text, unpack)
 import Data.Text.Encoding (decodeUtf8)
 import Data.UUID (UUID, fromText)
 import Network.HTTP.Types
@@ -73,6 +73,10 @@ ensureCommonAuthHeaders req = do
   hostHeader      <- ensureHeader req "Host"
   publicKeyHeader <- ensureHeader req "X-CROSSMAP-Public-Key"
   requestIdHeader <- ensureHeader req "X-CROSSMAP-Request-Id"
+  liftIO $ putStrLn $ "authHeader: " <> (Data.Text.unpack $ decodeUtf8 authHeader)
+  liftIO $ putStrLn $ "hostHeader: " <> (Data.Text.unpack $ decodeUtf8 hostHeader)
+  liftIO $ putStrLn $ "publicKeyHeader: " <> (Data.Text.unpack $ decodeUtf8 publicKeyHeader)
+  liftIO $ putStrLn $ "requestIdHeader: " <> (Data.Text.unpack $ decodeUtf8 requestIdHeader)
   return AuthHeaders {..}
 
 

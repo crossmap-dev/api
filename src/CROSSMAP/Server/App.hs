@@ -21,5 +21,6 @@ app state req respond =
     Just response -> respond response
     Nothing -> logStdout application req respond
   where
-    application = serveWithContext api authContext $ server state
+    authContext' = authContext state
+    application = serveWithContext api authContext' $ server state
     socketHandler = websocketHandler state

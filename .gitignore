@@ -1,3 +1,2 @@
-bin/crossmap-dev
-bin/crossmap-dev-server
 dist-newstyle
+/target

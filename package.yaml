@@ -1,5 +1,5 @@
-name: crossmap-dev-api
-version: 0.0.1
+name: crossmap-api
+version: 0.0.2
 github: "crossmap-dev/api"
 license: BSD-3-Clause
 author: "Mike Taylor"
@@ -18,6 +18,8 @@ dependencies:
 - bytestring
 - case-insensitive
 - containers
+- crypton
+- data-textual
 - ed25519
 - hasql
 - hasql-migration
@@ -26,7 +28,10 @@ dependencies:
 - http-client
 - http-client-tls
 - http-types
+- iproute
+- network
 - optparse-applicative
+- servant-client
 - servant-server
 - stm
 - text
@@ -53,7 +58,7 @@ library:
   source-dirs: src
 
 executables:
-  crossmap-dev:
+  crossmap:
     main:                Main.hs
     source-dirs:         cli/client
     ghc-options:
@@ -62,8 +67,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - base
-    - crossmap-dev-api
-  crossmap-dev-server:
+    - crossmap-api
+  crossmap-server:
     main:                Main.hs
     source-dirs:         cli/server
     ghc-options:
@@ -72,4 +77,4 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - base
-    - crossmap-dev-api
+    - crossmap-api

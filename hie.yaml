@@ -1,10 +1,10 @@
 cradle:
   cabal:
     - path: "src"
-      component: "lib:crossmap-dev-api"
+      component: "lib:crossmap-api"
 
     - path: "cli/client/Main.hs"
-      component: "crossmap-dev-api:exe:crossmap-dev"
+      component: "crossmap-api:exe:crossmap"
 
     - path: "cli/server/Main.hs"
-      component: "crossmap-dev-api:exe:crossmap-dev-server"
+      component: "crossmap-api:exe:crossmap-server"

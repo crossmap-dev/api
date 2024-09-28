@@ -4,8 +4,8 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 
-name:           crossmap-dev-api
-version:        0.0.1
+name:           crossmap-api
+version:        0.0.2
 description:    Please see the README on GitHub at <https://github.com/crossmap-dev/api#readme>
 homepage:       https://github.com/crossmap-dev/api#readme
 bug-reports:    https://github.com/crossmap-dev/api/issues
@@ -24,9 +24,16 @@ source-repository head
 library
   exposed-modules:
       CROSSMAP.API
+      CROSSMAP.Client
+      CROSSMAP.Client.API
       CROSSMAP.Client.Command
+      CROSSMAP.Client.Command.Keypair
+      CROSSMAP.Client.Command.Login
       CROSSMAP.Index
       CROSSMAP.Login
+      CROSSMAP.Password
+      CROSSMAP.PublicKey
+      CROSSMAP.SecretKey
       CROSSMAP.Server.API
       CROSSMAP.Server.App
       CROSSMAP.Server.Auth
@@ -34,14 +41,18 @@ library
       CROSSMAP.Server.Config
       CROSSMAP.Server.DB
       CROSSMAP.Server.DB.Migration
+      CROSSMAP.Server.DB.PublicKey
+      CROSSMAP.Server.DB.Session
+      CROSSMAP.Server.DB.User
       CROSSMAP.Server.Handlers
+      CROSSMAP.Server.Init
       CROSSMAP.Server.Socket
       CROSSMAP.Server.State
       CROSSMAP.Session
   other-modules:
-      Paths_crossmap_dev_api
+      Paths_crossmap_api
   autogen-modules:
-      Paths_crossmap_dev_api
+      Paths_crossmap_api
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -52,6 +63,8 @@ library
     , bytestring
     , case-insensitive
     , containers
+    , crypton
+    , data-textual
     , ed25519
     , hasql
     , hasql-migration
@@ -60,7 +73,10 @@ library
     , http-client
     , http-client-tls
     , http-types
+    , iproute
+    , network
     , optparse-applicative
+    , servant-client
     , servant-server
     , stm
     , text
@@ -73,12 +89,12 @@ library
     , websockets
   default-language: Haskell2010
 
-executable crossmap-dev
+executable crossmap
   main-is: Main.hs
   other-modules:
-      Paths_crossmap_dev_api
+      Paths_crossmap_api
   autogen-modules:
-      Paths_crossmap_dev_api
+      Paths_crossmap_api
   hs-source-dirs:
       cli/client
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -89,7 +105,9 @@ executable crossmap-dev
     , bytestring
     , case-insensitive
     , containers
-    , crossmap-dev-api
+    , crossmap-api
+    , crypton
+    , data-textual
     , ed25519
     , hasql
     , hasql-migration
@@ -98,7 +116,10 @@ executable crossmap-dev
     , http-client
     , http-client-tls
     , http-types
+    , iproute
+    , network
     , optparse-applicative
+    , servant-client
     , servant-server
     , stm
     , text
@@ -111,12 +132,12 @@ executable crossmap-dev
     , websockets
   default-language: Haskell2010
 
-executable crossmap-dev-server
+executable crossmap-server
   main-is: Main.hs
   other-modules:
-      Paths_crossmap_dev_api
+      Paths_crossmap_api
   autogen-modules:
-      Paths_crossmap_dev_api
+      Paths_crossmap_api
   hs-source-dirs:
       cli/server
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -127,7 +148,9 @@ executable crossmap-dev-server
     , bytestring
     , case-insensitive
     , containers
-    , crossmap-dev-api
+    , crossmap-api
+    , crypton
+    , data-textual
     , ed25519
     , hasql
     , hasql-migration
@@ -136,7 +159,10 @@ executable crossmap-dev-server
     , http-client
     , http-client-tls
     , http-types
+    , iproute
+    , network
     , optparse-applicative
+    , servant-client
     , servant-server
     , stm
     , text

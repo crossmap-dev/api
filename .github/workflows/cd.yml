@@ -2,19 +2,23 @@ name: Continuous Deployment
 on:
   workflow_call:
     inputs:
-      tag:
+      env:
         type: string
         required: true
+      tag:
+        type: string
+        required: false
 jobs:
   git-tag:
+    if: ${{ inputs.tag != null }}
     name: Git Tag
     runs-on: crossmap-dev-runners-k8s
     container:
       image: images.home.mtaylor.io/deployer:0.0.9
     steps:
     - uses: actions/checkout@v4
-    - name: "Configure git"
-      shell: "bash"
+    - name: Configure git
+      shell: bash
       run: |
         git config --global user.email "githubactions@crossmap.dev"
         git config --global user.name "GitHub Actions"
@@ -25,3 +29,55 @@ jobs:
     - name: Git Push
       shell: bash
       run: git push origin ${{ inputs.tag }}
+  argocd-deployment:
+    name: ArgoCD Deployment
+    environment: ${{ inputs.env }}
+    runs-on: crossmap-dev-runners-k8s
+    container:
+      image: images.home.mtaylor.io/deployer:0.0.9
+    steps:
+    - uses: actions/checkout@v4
+    - name: Configure git
+      shell: bash
+      run: |
+        git config --global user.email "githubactions@crossmap.dev"
+        git config --global user.name "GitHub Actions"
+        git config --global --add safe.directory $GITHUB_WORKSPACE
+    - name: Checkout argocd-deployment
+      uses: actions/checkout@v4
+      with:
+        path: argocd-deployment
+        repository: mtaylor91/argocd-deployment
+        ref: main
+        ssh-key: ${{ secrets.ARGOCD_DEPLOYMENT_SSH_PRIVATE_KEY }}
+    - name: Update argocd-deployment
+      shell: bash
+      run: |
+        set -euxo pipefail
+        cd argocd-deployment
+        path=home/namespaced/crossmap-${{ inputs.env }}
+        if [ -z "${{ inputs.tag }}" ]; then
+          tag=sha-$(echo $GITHUB_SHA | cut -c1-7)
+          pushd ${path}
+          kustomize edit set image images.home.mtaylor.io/crossmap-api:${tag}
+          popd
+        else
+          repo=https://github.com/crossmap-dev/api
+          tag=${{ inputs.tag }}
+          ./bin/update-repo-tag.sh ${path} ${repo} ${tag}
+        fi
+        if [ -z "$(git status --porcelain)" ]; then
+          echo "No changes to argocd-deployment"
+        else
+          git commit -a -m "Update crossmap-${{ inputs.env }} to ${tag}"
+          git push origin main
+        fi
+    - name: ArgoCD Deployment
+      shell: bash
+      env:
+        ARGOCD_SERVER: argocd.mtaylor.io
+        ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+      run: |
+        set -euxo pipefail
+        argocd app sync argocd/crossmap-${{ inputs.env }} --grpc-web
+        argocd app wait argocd/crossmap-${{ inputs.env }} --grpc-web --sync --health --timeout 300

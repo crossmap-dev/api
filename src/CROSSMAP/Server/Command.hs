@@ -10,6 +10,7 @@ import CROSSMAP.Server.App
 import CROSSMAP.Server.Config
 import CROSSMAP.Server.DB
 import CROSSMAP.Server.DB.Migration
+import CROSSMAP.Server.Init
 import CROSSMAP.Server.State
 
 
@@ -44,4 +45,5 @@ runWithOptionsAndEnv opts env = do
   pool <- connect env
   let state = new pool (optVerbose opts)
   migrate (envMigrationDir env) pool
+  serverInit state (envPublicKey env)
   Warp.run (envPort env) (app state)

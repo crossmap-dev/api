@@ -53,23 +53,17 @@ jobs:
 
     - name: Build
       shell: sh
-      run: cabal install --installdir=bin --install-method=copy --overwrite-policy=always
+      run: cabal install --installdir=target --install-method=copy --overwrite-policy=always
 
     - name: Run tests
       shell: sh
       run: cabal test all
 
-    - name: Upload client
+    - name: Upload target
       uses: actions/upload-artifact@v4
       with:
-        name: crossmap-dev
-        path: bin/crossmap-dev
-
-    - name: Upload server
-      uses: actions/upload-artifact@v4
-      with:
-        name: crossmap-dev-server
-        path: bin/crossmap-dev-server
+        name: target
+        path: target
   docker-image:
     name: Docker Image
     needs: haskell-build
@@ -80,35 +74,22 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Download client
+    - name: Download target
       uses: actions/download-artifact@v4
       with:
-        name: crossmap-dev
-        path: bin/crossmap-dev
+        name: target
+        path: target
 
-    - name: Download server
-      uses: actions/download-artifact@v4
-      with:
-        name: crossmap-dev-server
-        path: bin/crossmap-dev-server
-
-    - name: Fix paths and permissions
-      shell: sh
+    - name: Fix permissions
+      shell: bash
       run: |
-        mv bin/crossmap-dev crossmap-dev
-        mv bin/crossmap-dev-server crossmap-dev-server
-        mv crossmap-dev/crossmap-dev bin/crossmap-dev
-        mv crossmap-dev-server/crossmap-dev-server bin/crossmap-dev-server
-        chmod +x bin/crossmap-dev
-        chmod +x bin/crossmap-dev-server
-        rmdir crossmap-dev
-        rmdir crossmap-dev-server
+        sudo chmod 0755 target/*
 
     - id: meta
       name: Docker Metadata
       uses: docker/metadata-action@v5
       with:
-        images: images.home.mtaylor.io/crossmap-dev-api
+        images: images.home.mtaylor.io/crossmap-api
         tags: ${{ inputs.tags }}
 
     - name: Build and push

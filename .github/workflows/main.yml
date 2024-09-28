@@ -38,4 +38,6 @@ jobs:
     needs: [ci, version]
     uses: ./.github/workflows/cd.yml
     with:
+      env: prod
       tag: ${{ needs.version.outputs.version }}
+    secrets: inherit

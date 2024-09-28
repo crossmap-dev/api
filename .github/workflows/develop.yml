@@ -18,3 +18,10 @@ jobs:
       tags: |
         develop
         type=sha
+  cd:
+    name: Continuous Deployment
+    needs: [ci]
+    uses: ./.github/workflows/cd.yml
+    with:
+      env: dev
+    secrets: inherit

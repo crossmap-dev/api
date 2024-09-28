@@ -12,7 +12,7 @@ VERSION=$(tr -d '\n' < VERSION.txt)
 
 # Update the image tag in the kustomization.yaml file
 pushd deploy
-kustomize edit set image images.home.mtaylor.io/crossmap-dev-api:${VERSION}
+kustomize edit set image images.home.mtaylor.io/crossmap-api:${VERSION}
 popd
 git add deploy/kustomization.yml
 git commit -m "Update image tag to ${VERSION}"

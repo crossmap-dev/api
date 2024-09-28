@@ -14,7 +14,7 @@ import Data.ByteString
 import Data.ByteString.Base64
 import Data.CaseInsensitive (original)
 import Data.Text (Text, unpack)
-import Data.Text.Encoding (decodeUtf8)
+import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import Data.UUID (UUID, fromText)
 import Network.HTTP.Types
 import Network.Socket (SockAddr)
@@ -22,6 +22,7 @@ import Network.Wai
 import Servant
 import Servant.Server.Experimental.Auth
 
+import CROSSMAP.Auth
 import CROSSMAP.Server.DB
 import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.State
@@ -58,13 +59,13 @@ authContext state = userAuthHandler state :. sessionAuthHandler state :. EmptyCo
 userAuthHandler :: State -> AuthHandler Request SignatureInfo
 userAuthHandler state = mkAuthHandler $ \req -> do
   authHeaders <- ensureCommonAuthHeaders req
-  checkAuth state authHeaders (remoteHost req) UserKey
+  checkAuth state authHeaders req UserKey
 
 
 sessionAuthHandler :: State -> AuthHandler Request SignatureInfo
 sessionAuthHandler state = mkAuthHandler $ \req -> do
   authHeaders <- ensureCommonAuthHeaders req
-  checkAuth state authHeaders (remoteHost req) SessionKey
+  checkAuth state authHeaders req SessionKey
 
 
 ensureCommonAuthHeaders :: Request -> Handler AuthHeaders
@@ -80,14 +81,19 @@ ensureCommonAuthHeaders req = do
   return AuthHeaders {..}
 
 
-checkAuth :: State -> AuthHeaders -> SockAddr -> PublicKeyType -> Handler SignatureInfo
-checkAuth State{pool=pool} AuthHeaders{..} sockAddr keyType = do
-  let stringToSign = hostHeader <> "/" <> requestIdHeader
-  liftIO $ putStrLn $ "string to sign: " <> show stringToSign
+checkAuth :: State -> AuthHeaders -> Request -> PublicKeyType -> Handler SignatureInfo
+checkAuth State{pool=pool} AuthHeaders{..} req keyType = do
   signatureInfoHost <- return $ decodeUtf8 hostHeader
   signatureInfoRequestId <- ensureValidUUID requestIdHeader
   signatureInfoPublicKey <- ensureValidPublicKey publicKeyHeader
-  ensureValidSignature authHeader stringToSign signatureInfoPublicKey
+  let stringToSign' = stringToSign
+        signatureInfoRequestId
+        (requestMethod req)
+        (encodeUtf8 signatureInfoHost)
+        (rawPathInfo req)
+        (rawQueryString req)
+  liftIO $ putStrLn $ "string to sign: " <> show stringToSign'
+  ensureValidSignature authHeader stringToSign' signatureInfoPublicKey
   result <- liftIO $ runQuery pool $ lookupPublicKey signatureInfoPublicKey
   case result of
     Right (Just publicKeyInfo) -> do
@@ -96,7 +102,7 @@ checkAuth State{pool=pool} AuthHeaders{..} sockAddr keyType = do
           { signatureInfoHost = signatureInfoHost
           , signatureInfoRequestId = signatureInfoRequestId
           , signatureInfoPublicKeyInfo = publicKeyInfo
-          , signatureInfoSocketAddr = sockAddr
+          , signatureInfoSocketAddr = remoteHost req
           }
         else throwError $ err401 { errBody = "Invalid public key type" }
     Right Nothing -> throwError $ err401 { errBody = "Public key not found" }
@@ -124,12 +130,12 @@ ensureValidPublicKey bs = if Data.ByteString.length bs == 32
 
 
 ensureValidSignature :: ByteString -> ByteString -> PublicKey -> Handler ()
-ensureValidSignature authHeader stringToSign publicKey = do
+ensureValidSignature authHeader stringToSign' publicKey = do
   -- authHeader is expected to be in the format "Signature <signature>"
   case Data.ByteString.splitAt 10 authHeader of
     ("Signature ", signatureBase64) -> do
       let signature = Data.ByteString.Base64.decodeBase64Lenient signatureBase64
-      if Crypto.Sign.Ed25519.dverify publicKey stringToSign $ Signature signature
+      if Crypto.Sign.Ed25519.dverify publicKey stringToSign' $ Signature signature
         then return ()
         else throwError $ err401 { errBody = "Invalid signature" }
     _ -> throwError $ err401 { errBody = "Invalid Authorization header" }

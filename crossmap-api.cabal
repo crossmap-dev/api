@@ -24,6 +24,7 @@ source-repository head
 library
   exposed-modules:
       CROSSMAP.API
+      CROSSMAP.Auth
       CROSSMAP.Client
       CROSSMAP.Client.API
       CROSSMAP.Client.Command

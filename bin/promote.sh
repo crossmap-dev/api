@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euxo pipefail
 
+# Fetch the latest changes
+git fetch origin
+
 # Promote develop to main
 git checkout main
 

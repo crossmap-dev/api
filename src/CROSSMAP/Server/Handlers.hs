@@ -9,7 +9,6 @@ module CROSSMAP.Server.Handlers
 import Control.Monad.IO.Class
 import Data.IP
 import Data.Time.Clock
-import Data.UUID
 import Network.Socket
 import Servant
 
@@ -53,8 +52,22 @@ loginHandler State{..} SignatureInfo{..} loginReq = do
         }
       case result' of
         Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
-        Right () -> return $ LoginResponse $ Base64PublicKey sessionPublicKey
+        Right () -> return $ LoginResponse
+          { loginResponseSessionUser = userId publicKeyInfoUser
+          , loginResponseSessionPublicKey = Base64PublicKey sessionPublicKey
+          , loginResponseSessionCreatedAt = now
+          , loginResponseSessionExpiresAt = expires
+          }
 
 
 sessionHandler :: State -> SignatureInfo -> Handler SessionResponse
-sessionHandler _ _ = return $ SessionResponse nil
+sessionHandler _ SignatureInfo{..} = return $ SessionResponse
+  { sessionResponseSessionUser =
+    userId $ publicKeyInfoUser signatureInfoPublicKeyInfo
+  , sessionResponseSessionPublicKey =
+    Base64PublicKey $ publicKeyInfoPublicKey signatureInfoPublicKeyInfo
+  , sessionResponseSessionCreatedAt =
+    publicKeyInfoCreated signatureInfoPublicKeyInfo
+  , sessionResponseSessionExpiresAt =
+    publicKeyInfoExpires signatureInfoPublicKeyInfo
+  }

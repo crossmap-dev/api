@@ -7,6 +7,8 @@ module CROSSMAP.Login
 
 import Data.Aeson
 import Data.Text
+import Data.Time
+import Data.UUID
 
 import CROSSMAP.PublicKey
 
@@ -32,15 +34,26 @@ instance ToJSON LoginRequest where
 
 
 data LoginResponse = LoginResponse
-  { loginResponseSessionPublicKey :: Base64PublicKey
+  { loginResponseSessionUser :: UUID
+  , loginResponseSessionPublicKey :: Base64PublicKey
+  , loginResponseSessionCreatedAt :: UTCTime
+  , loginResponseSessionExpiresAt :: UTCTime
   } deriving (Show)
 
 
 instance FromJSON LoginResponse where
   parseJSON = withObject "LoginResponse" $ \o -> do
+    loginResponseSessionUser <- o .: "sessionUser"
     loginResponseSessionPublicKey <- o .: "sessionPublicKey"
+    loginResponseSessionCreatedAt <- o .: "sessionCreatedAt"
+    loginResponseSessionExpiresAt <- o .: "sessionExpiresAt"
     return LoginResponse{..}
 
 
 instance ToJSON LoginResponse where
-  toJSON LoginResponse{..} = object [ "sessionPublicKey" .= loginResponseSessionPublicKey ]
+  toJSON LoginResponse{..} = object
+    [ "sessionUser" .= loginResponseSessionUser
+    , "sessionPublicKey" .= loginResponseSessionPublicKey
+    , "sessionCreatedAt" .= loginResponseSessionCreatedAt
+    , "sessionExpiresAt" .= loginResponseSessionExpiresAt
+    ]

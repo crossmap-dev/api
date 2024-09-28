@@ -52,7 +52,7 @@ loginHandler State{..} SignatureInfo{..} loginReq = do
             _ -> error "Unsupported socket address"
         }
       case result' of
-        Left _ -> throwError err500
+        Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
         Right () -> return $ LoginResponse $ Base64PublicKey sessionPublicKey
 
 

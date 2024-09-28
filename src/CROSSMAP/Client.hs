@@ -17,6 +17,7 @@ import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import qualified Servant.Client as SC
 
+import CROSSMAP.Auth
 import CROSSMAP.Client.API
 import CROSSMAP.Login
 import CROSSMAP.Password
@@ -53,7 +54,7 @@ newSession url username password = do
   let loginEnv = SC.mkClientEnv loginManager url'
   let loginRequest = LoginRequest
         { loginRequestUsername = username
-        , loginRequestSessionPublicKey = Base64PublicKey userPK
+        , loginRequestSessionPublicKey = Base64PublicKey sessionPK
         }
   response <- SC.runClientM (loginClient loginRequest) loginEnv
   case response of
@@ -103,8 +104,8 @@ signRequest pk sk req = do
     Just _ -> return req
     Nothing -> do
       requestId <- nextRandom
-      let stringToSign = authStringToSign req requestId
-      let Signature signature = dsign sk $ encodeUtf8 stringToSign
+      let stringToSign' = authStringToSign req requestId
+      let Signature signature = dsign sk $ encodeUtf8 stringToSign'
       let signatureB64 = extractBase64 $ encodeBase64 signature
       let req' = req
             { requestHeaders = requestHeaders req
@@ -118,9 +119,8 @@ signRequest pk sk req = do
 
 authStringToSign :: Request -> UUID -> Text
 authStringToSign req reqId
-  = decodeUtf8 $ r <> " " <> m <> " " <> h <> p <> q
+  = decodeUtf8 $ CROSSMAP.Auth.stringToSign reqId m h p q
   where m = method req
         h = host req
         p = path req
         q = queryString req
-        r = encodeUtf8 $ toText reqId

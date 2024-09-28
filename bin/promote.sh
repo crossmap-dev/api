@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 # Fetch the latest changes
-git fetch origin
+git fetch origin --unshallow
 
 # Promote develop to main
 git checkout main

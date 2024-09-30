@@ -3,8 +3,10 @@ module CROSSMAP.Server.DB.User
   ( User(..)
   , Username(..)
   , getUser
+  , getUsers
   , getUserByUsername
   , getUsernames
+  , getUserUsernames
   , insertUser
   , insertUsername
   , insertUserWithName
@@ -37,6 +39,17 @@ getUserStatement = Statement sql encoder decoder True where
   decoder = D.rowMaybe (User <$> D.column (D.nonNullable D.uuid))
 
 
+getUsers :: Transaction [User]
+getUsers = statement () getUsersStatement
+
+
+getUsersStatement :: Statement () [User]
+getUsersStatement = Statement sql encoder decoder True where
+  sql = "SELECT uuid FROM users"
+  encoder = E.noParams
+  decoder = D.rowList (User <$> D.column (D.nonNullable D.uuid))
+
+
 getUserByUsername :: Text -> Transaction (Maybe User)
 getUserByUsername = flip statement getUserByUsernameStatement
 
@@ -48,12 +61,26 @@ getUserByUsernameStatement = Statement sql encoder decoder True where
   decoder = D.rowMaybe (User <$> D.column (D.nonNullable D.uuid))
 
 
-getUsernames :: User -> Transaction [Username]
-getUsernames = flip statement getUsernamesStatement
+getUsernames :: Transaction [Username]
+getUsernames = statement () getUsernamesStatement
 
 
-getUsernamesStatement :: Statement User [Username]
+getUsernamesStatement :: Statement () [Username]
 getUsernamesStatement = Statement sql encoder decoder True where
+  sql = "SELECT user_uuid, name FROM users_names"
+  encoder = E.noParams
+  decoder = D.rowList userNameDecoder
+  userNameDecoder = Username
+    <$> (User <$> D.column (D.nonNullable D.uuid))
+    <*> D.column (D.nonNullable D.text)
+
+
+getUserUsernames :: User -> Transaction [Username]
+getUserUsernames = flip statement getUserUsernamesStatement
+
+
+getUserUsernamesStatement :: Statement User [Username]
+getUserUsernamesStatement = Statement sql encoder decoder True where
   sql = "SELECT user_uuid, name FROM users_names WHERE user_uuid = $1"
   encoder = userId >$< E.param (E.nonNullable E.uuid)
   decoder = D.rowList userNameDecoder
@@ -95,5 +122,5 @@ insertUserWithName user name = do
 
 userHasName :: User -> Text -> Transaction Bool
 userHasName user name = do
-  names <- getUsernames user
+  names <- getUserUsernames user
   return $ any ((== name) . username) names

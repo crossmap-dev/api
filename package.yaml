@@ -39,6 +39,7 @@ dependencies:
 - text
 - time
 - uuid
+- vector
 - wai
 - wai-extra
 - wai-websockets

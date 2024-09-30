@@ -7,7 +7,6 @@ module CROSSMAP.Client.Command.Login
 
 import Data.Text
 import Options.Applicative
-import System.IO
 
 import CROSSMAP.Client
 import CROSSMAP.Client.State

@@ -46,6 +46,7 @@ library
       CROSSMAP.Server.Config
       CROSSMAP.Server.DB
       CROSSMAP.Server.DB.Migration
+      CROSSMAP.Server.DB.Policy
       CROSSMAP.Server.DB.PublicKey
       CROSSMAP.Server.DB.Session
       CROSSMAP.Server.DB.User
@@ -89,6 +90,7 @@ library
     , text
     , time
     , uuid
+    , vector
     , wai
     , wai-extra
     , wai-websockets
@@ -135,6 +137,7 @@ executable crossmap
     , text
     , time
     , uuid
+    , vector
     , wai
     , wai-extra
     , wai-websockets
@@ -181,6 +184,7 @@ executable crossmap-server
     , text
     , time
     , uuid
+    , vector
     , wai
     , wai-extra
     , wai-websockets

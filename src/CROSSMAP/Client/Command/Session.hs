@@ -26,7 +26,7 @@ runSession SessionCommand = do
       putStrLn "Client not logged in."
     Just state -> do
       client <- loadSessionFromState state
-      result <- runClient client sessionClient
+      result <- runClient client getSessionClient
       case result of
         Left err ->
           putStrLn $ "Error: " ++ show err

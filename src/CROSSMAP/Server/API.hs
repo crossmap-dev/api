@@ -22,4 +22,4 @@ loginServer = loginHandler
 
 
 secureServer :: State -> Server SecureSessionAPI
-secureServer = sessionHandler
+secureServer state sig = getSessionHandler state sig :<|> deleteSessionHandler state sig

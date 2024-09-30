@@ -1,8 +1,12 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 module CROSSMAP.Client.API
   ( loginClient
-  , sessionClient
+  , getSessionClient
+  , deleteSessionClient
   ) where
 
+import Servant
 import Servant.Client
 
 import CROSSMAP.API
@@ -13,7 +17,13 @@ import CROSSMAP.Session
 type LoginClientM = LoginRequest -> ClientM LoginResponse
 
 
-type SessionClientM = ClientM SessionResponse
+type SessionClientM = GetSessionClientM :<|> DeleteSessionClientM
+
+
+type GetSessionClientM = ClientM SessionResponse
+
+
+type DeleteSessionClientM = ClientM NoContent
 
 
 loginClient :: LoginClientM
@@ -22,3 +32,8 @@ loginClient = client loginAPI
 
 sessionClient :: SessionClientM
 sessionClient = client privateAPI
+
+
+getSessionClient :: GetSessionClientM
+deleteSessionClient :: DeleteSessionClientM
+getSessionClient :<|> deleteSessionClient = sessionClient

@@ -4,8 +4,10 @@ module CROSSMAP.Server.DB.PublicKey
   ( PublicKeyType(..)
   , PublicKeyInfo(..)
   , insertPublicKey
+  , deletePublicKey
   , lookupPublicKey
   , insertUserPublicKey
+  , deleteUserPublicKey
   ) where
 
 import Crypto.Sign.Ed25519 (PublicKey(..))
@@ -48,6 +50,17 @@ insertPublicKeyStatement = Statement sql encoder decoder False where
   decoder = D.noResult
 
 
+deletePublicKey :: PublicKey -> Transaction ()
+deletePublicKey publicKey = statement publicKey deletePublicKeyStatement
+
+
+deletePublicKeyStatement :: Statement PublicKey ()
+deletePublicKeyStatement = Statement sql encoder decoder False where
+  sql = "DELETE FROM public_keys WHERE public_key = $1"
+  encoder = unPublicKey >$< E.param (E.nonNullable E.bytea)
+  decoder = D.noResult
+
+
 insertUserPublicKey :: User -> UTCTime -> UTCTime -> PublicKey -> Transaction ()
 insertUserPublicKey user created expires publicKey = do
   insertPublicKey created expires publicKey
@@ -61,6 +74,22 @@ insertUserPublicKeyStatement = Statement sql encoder decoder False where
         \VALUES ($1, $2)"
   encoder
     =  ((userId . fst) >$< E.param (E.nonNullable E.uuid))
+    <> (unPublicKey . snd >$< E.param (E.nonNullable E.bytea))
+  decoder = D.noResult
+
+
+deleteUserPublicKey :: User -> PublicKey -> Transaction ()
+deleteUserPublicKey user publicKey = do
+  statement (user, publicKey) deleteUserPublicKeyStatement
+  deletePublicKey publicKey
+
+
+deleteUserPublicKeyStatement :: Statement (User, PublicKey) ()
+deleteUserPublicKeyStatement = Statement sql encoder decoder False where
+  sql = "DELETE FROM users_public_keys \
+        \WHERE user_uuid = $1 AND public_key = $2"
+  encoder
+    =  (userId . fst >$< E.param (E.nonNullable E.uuid))
     <> (unPublicKey . snd >$< E.param (E.nonNullable E.bytea))
   decoder = D.noResult
 

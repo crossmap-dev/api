@@ -28,7 +28,8 @@ type PublicAPI = IndexEndpoint
 type LoginAPI = "login" :> LoginEndpoint
 
 
-type PrivateAPI = "session" :> SessionEndpoint
+type PrivateAPI
+  = "session" :> SessionAPI
 
 
 type SecureUserAPI = AuthProtect "signature" :> LoginAPI
@@ -37,13 +38,19 @@ type SecureUserAPI = AuthProtect "signature" :> LoginAPI
 type SecureSessionAPI = AuthProtect "signature" :> PrivateAPI
 
 
+type SessionAPI = GetSessionEndpoint :<|> DeleteSessionEndpoint
+
+
 type IndexEndpoint = Get '[JSON] IndexResponse
 
 
 type LoginEndpoint = ReqBody '[JSON] LoginRequest :> Post '[JSON] LoginResponse
 
 
-type SessionEndpoint = Get '[JSON] SessionResponse
+type GetSessionEndpoint = Get '[JSON] SessionResponse
+
+
+type DeleteSessionEndpoint = Delete '[JSON] NoContent
 
 
 api :: Proxy API

@@ -3,7 +3,8 @@
 module CROSSMAP.Server.Handlers
   ( indexHandler
   , loginHandler
-  , sessionHandler
+  , getSessionHandler
+  , deleteSessionHandler
   ) where
 
 import Control.Monad.IO.Class
@@ -60,8 +61,8 @@ loginHandler State{..} SignatureInfo{..} loginReq = do
           }
 
 
-sessionHandler :: State -> SignatureInfo -> Handler SessionResponse
-sessionHandler _ SignatureInfo{..} = do
+getSessionHandler :: State -> SignatureInfo -> Handler SessionResponse
+getSessionHandler _ SignatureInfo{..} = do
   ensureSession signatureInfoPublicKeyInfo
   return $ SessionResponse
     { sessionResponseSessionUser =
@@ -73,6 +74,25 @@ sessionHandler _ SignatureInfo{..} = do
     , sessionResponseSessionExpiresAt =
       publicKeyInfoExpires signatureInfoPublicKeyInfo
     }
+
+
+deleteSessionHandler :: State -> SignatureInfo -> Handler NoContent
+deleteSessionHandler State{..} SignatureInfo{..} = do
+  ensureSession signatureInfoPublicKeyInfo
+  let PublicKeyInfo{..} = signatureInfoPublicKeyInfo
+  result <- liftIO $ runUpdate pool $ deleteSession $ Session
+    { sessionUser = publicKeyInfoUser
+    , sessionPublicKey = publicKeyInfoPublicKey
+    , sessionAddress = case signatureInfoSocketAddr of
+        SockAddrInet _ addr ->
+          IPv4Range $ makeAddrRange (fromHostAddress addr) 32
+        SockAddrInet6 _ _ addr _ ->
+          IPv6Range $ makeAddrRange (fromHostAddress6 addr) 128
+        _ -> error "Unsupported socket address"
+    }
+  case result of
+    Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
+    Right () -> return NoContent
 
 
 ensureSession :: PublicKeyInfo -> Handler ()

@@ -6,12 +6,14 @@ import Options.Applicative
 
 import CROSSMAP.Client.Command.Keypair
 import CROSSMAP.Client.Command.Login
+import CROSSMAP.Client.Command.Logout
 import CROSSMAP.Client.Command.Session
 
 
 data Command
   = Keypair KeypairCommand
   | Login LoginCommand
+  | Logout LogoutCommand
   | Session SessionCommand
   deriving (Show)
 
@@ -25,6 +27,8 @@ options = Options <$> hsubparser
     ( info (Keypair <$> keypairOptions) ( progDesc "Generate a keypair" ) )
   <> command "login"
       ( info (Login <$> loginOptions) ( progDesc "Login" ) )
+  <> command "logout"
+      ( info (Logout <$> logoutOptions) ( progDesc "Logout" ) )
   <> command "session"
       ( info (Session <$> sessionOptions) ( progDesc "Get the current session" ) )
   )
@@ -42,4 +46,5 @@ run = execParser opts >>= runWithOptions
 runWithOptions :: Options -> IO ()
 runWithOptions (Options (Keypair cmd)) = runKeypair cmd
 runWithOptions (Options (Login cmd)) = runLogin cmd
+runWithOptions (Options (Logout cmd)) = runLogout cmd
 runWithOptions (Options (Session cmd)) = runSession cmd

@@ -10,5 +10,5 @@ import Network.HTTP.Types
 
 
 stringToSign :: UUID -> Method -> ByteString -> ByteString -> ByteString -> ByteString
-stringToSign uuid method host path query =
-  (encodeUtf8 $ toText uuid) <> " " <> method <> " " <> host <> path <> query
+stringToSign requestId method host path query =
+  (encodeUtf8 $ toText requestId) <> " " <> method <> " " <> host <> path <> query

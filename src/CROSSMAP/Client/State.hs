@@ -7,6 +7,7 @@ module CROSSMAP.Client.State
   , loadSessionFromState
   , loadState
   , saveState
+  , clearState
   ) where
 
 import Data.Aeson
@@ -101,4 +102,12 @@ saveState s = do
   putStrLn "Saving state..."
   stateFilePath <- loadStateFilePath
   encodeFile stateFilePath s
+  pure ()
+
+
+clearState :: IO ()
+clearState = do
+  putStrLn "Clearing state..."
+  stateFilePath <- loadStateFilePath
+  removeFile stateFilePath
   pure ()

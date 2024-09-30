@@ -30,8 +30,10 @@ library
       CROSSMAP.Client.Command
       CROSSMAP.Client.Command.Keypair
       CROSSMAP.Client.Command.Login
+      CROSSMAP.Client.Command.Logout
       CROSSMAP.Client.Command.Session
       CROSSMAP.Client.State
+      CROSSMAP.Client.Util
       CROSSMAP.Index
       CROSSMAP.Login
       CROSSMAP.Password

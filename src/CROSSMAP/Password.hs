@@ -21,8 +21,8 @@ keyDerivation username password = do
   where
     options = Options
       { iterations = 2
-      , memory = 2 ^ (16 :: Int)
-      , parallelism = 1
+      , memory = 2 ^ (23 :: Int)
+      , parallelism = 4
       , variant = Argon2id
       , version = Version13
       }

@@ -79,7 +79,6 @@ loadStateFilePath = do
 
 loadState :: IO (Maybe State)
 loadState = do
-  putStrLn "Loading state..."
   stateFilePath <- loadStateFilePath
   exists <- doesFileExist stateFilePath
   if exists
@@ -87,19 +86,16 @@ loadState = do
       state <- decodeFileStrict stateFilePath
       case state of
         Just s -> do
-          putStrLn "State loaded."
           pure $ Just s
         Nothing -> do
           putStrLn "State file is corrupted."
           pure Nothing
     else do
-      putStrLn "State file does not exist."
       pure Nothing
 
 
 saveState :: State -> IO ()
 saveState s = do
-  putStrLn "Saving state..."
   stateFilePath <- loadStateFilePath
   encodeFile stateFilePath s
   pure ()
@@ -107,7 +103,6 @@ saveState s = do
 
 clearState :: IO ()
 clearState = do
-  putStrLn "Clearing state..."
   stateFilePath <- loadStateFilePath
   removeFile stateFilePath
   pure ()

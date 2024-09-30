@@ -4,11 +4,15 @@ module CROSSMAP.Client.Command.Session
   , runSession
   ) where
 
+import Data.Text
+import Data.UUID
 import Options.Applicative
 
 import CROSSMAP.Client
 import CROSSMAP.Client.API
 import CROSSMAP.Client.State
+import CROSSMAP.PublicKey
+import CROSSMAP.Session
 
 
 data SessionCommand = SessionCommand deriving (Show)
@@ -30,5 +34,9 @@ runSession SessionCommand = do
       case result of
         Left err ->
           putStrLn $ "Error: " ++ show err
-        Right s ->
-          print s
+        Right s -> do
+          let publicKey = sessionResponseSessionPublicKey s
+          putStrLn $ "User ID: " ++ unpack (toText (sessionResponseSessionUser s))
+          putStrLn $ "Public key: " ++ unpack (base64PublicKeyToText publicKey)
+          putStrLn $ "Created at: " ++ show (sessionResponseSessionCreatedAt s)
+          putStrLn $ "Expires at: " ++ show (sessionResponseSessionExpiresAt s)

@@ -1,5 +1,6 @@
 module CROSSMAP.PublicKey
   ( Base64PublicKey(..)
+  , base64PublicKeyToText
   , publicKeyFromText
   , publicKeyToText
   ) where
@@ -28,6 +29,10 @@ instance FromJSON Base64PublicKey where
 
 instance ToJSON Base64PublicKey where
   toJSON (Base64PublicKey pk) = String $ publicKeyToText pk
+
+
+base64PublicKeyToText :: Base64PublicKey -> Text
+base64PublicKeyToText (Base64PublicKey pk) = publicKeyToText pk
 
 
 publicKeyFromText :: Text -> Maybe PublicKey

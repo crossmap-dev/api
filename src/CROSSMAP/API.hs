@@ -15,6 +15,7 @@ module CROSSMAP.API
   , privateAPI
   ) where
 
+import Data.Text (Text)
 import Servant
 
 import CROSSMAP.Index
@@ -53,6 +54,7 @@ type UserAPI = GetUserEndpoint
 type UsersAPI
   = Get '[JSON] [UserId]
   :<|> Capture "user" UserId :> UserAPI
+  :<|> Capture "username" Text :> UserAPI
 
 
 type IndexEndpoint = Get '[JSON] IndexResponse

@@ -8,10 +8,12 @@ module CROSSMAP.Server.Handlers
   , getUserHandler
   , getUsersHandler
   , getUserByIdHandler
+  , getUserByUsernameHandler
   ) where
 
 import Control.Monad.IO.Class
 import Data.IP
+import Data.Text (Text)
 import Data.Time.Clock
 import Network.Socket
 import Servant
@@ -138,6 +140,26 @@ getUserByIdHandler State{..} SignatureInfo{..} userId = do
       , userResponsePublicKeys = publicKeys
       }
     _ -> throwError err500 { errBody = "Database error" }
+
+
+getUserByUsernameHandler :: State -> SignatureInfo -> Text -> Handler UserResponse
+getUserByUsernameHandler State{..} SignatureInfo{..} name = do
+  ensureSession signatureInfoPublicKeyInfo
+  result1 <- liftIO $ runQuery pool $ getUserByUsername name
+  case result1 of
+    Right (Just userId) -> do
+      result0 <- liftIO $ runQuery pool $ getUser $ unUserId userId
+      result2 <- liftIO $ runQuery pool $ getUserUsernames userId
+      result3 <- liftIO $ runQuery pool $ listUserPublicKeys userId
+      case (result0, result2, result3) of
+        (Right (Just user), Right usernames, Right publicKeys) -> return $ UserResponse
+          { userResponseUserId = unUserId user
+          , userResponseUsernames = fmap username usernames
+          , userResponsePublicKeys = publicKeys
+          }
+        _ -> throwError err500 { errBody = "Database error" }
+    Right Nothing -> throwError err404 { errBody = "User not found" }
+    e -> liftIO (print e) >> throwError err500 { errBody = "Database error" }
 
 
 

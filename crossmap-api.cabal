@@ -57,6 +57,7 @@ library
       CROSSMAP.Server.State
       CROSSMAP.Session
       CROSSMAP.User
+      CROSSMAP.Version
   other-modules:
       Paths_crossmap_api
   autogen-modules:

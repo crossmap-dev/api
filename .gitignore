@@ -1,2 +1,3 @@
 dist-newstyle
 /target
+/src/CROSSMAP/Version.hs

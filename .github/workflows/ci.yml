@@ -53,7 +53,7 @@ jobs:
 
     - name: Build
       shell: sh
-      run: cabal install --installdir=target --install-method=copy --overwrite-policy=always
+      run: ./bin/build.sh
 
     - name: Run tests
       shell: sh

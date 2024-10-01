@@ -8,6 +8,7 @@ import CROSSMAP.Client.Command.Keypair
 import CROSSMAP.Client.Command.Login
 import CROSSMAP.Client.Command.Logout
 import CROSSMAP.Client.Command.Session
+import CROSSMAP.Client.Command.User
 
 
 data Command
@@ -15,6 +16,7 @@ data Command
   | Login LoginCommand
   | Logout LogoutCommand
   | Session SessionCommand
+  | User UserCommand
   deriving (Show)
 
 
@@ -31,6 +33,8 @@ options = Options <$> hsubparser
       ( info (Logout <$> logoutOptions) ( progDesc "Logout" ) )
   <> command "session"
       ( info (Session <$> sessionOptions) ( progDesc "Get the current session" ) )
+  <> command "user"
+      ( info (User <$> userOptions) ( progDesc "Get the current user" ) )
   )
 
 
@@ -48,3 +52,4 @@ runWithOptions (Options (Keypair cmd)) = runKeypair cmd
 runWithOptions (Options (Login cmd)) = runLogin cmd
 runWithOptions (Options (Logout cmd)) = runLogout cmd
 runWithOptions (Options (Session cmd)) = runSession cmd
+runWithOptions (Options (User cmd)) = runUser cmd

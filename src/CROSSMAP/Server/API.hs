@@ -23,7 +23,10 @@ loginServer = loginHandler
 
 
 secureServer :: State -> Server SecureSessionAPI
-secureServer state sig = sessionServer state sig :<|> userServer state sig
+secureServer state sig
+  = sessionServer state sig
+  :<|> userServer state sig
+  :<|> usersServer state sig
 
 
 sessionServer :: State -> SignatureInfo -> Server SessionAPI
@@ -32,3 +35,7 @@ sessionServer state sig = getSessionHandler state sig :<|> deleteSessionHandler 
 
 userServer :: State -> SignatureInfo -> Server UserAPI
 userServer state sig = getUserHandler state sig
+
+
+usersServer :: State -> SignatureInfo -> Server UsersAPI
+usersServer state sig = getUsersHandler state sig :<|> getUserByIdHandler state sig

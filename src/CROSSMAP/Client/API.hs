@@ -5,6 +5,8 @@ module CROSSMAP.Client.API
   , getSessionClient
   , deleteSessionClient
   , getUserClient
+  , getUsersClient
+  , getUserByIdClient
   ) where
 
 import Servant
@@ -25,6 +27,9 @@ type SessionClientM = GetSessionClientM :<|> DeleteSessionClientM
 type UserClientM = GetUserClientM
 
 
+type UsersClientM = GetUsersClientM :<|> GetUserByIdClientM
+
+
 type GetSessionClientM = ClientM SessionResponse
 
 
@@ -34,13 +39,20 @@ type DeleteSessionClientM = ClientM NoContent
 type GetUserClientM = ClientM UserResponse
 
 
+type GetUsersClientM = ClientM [UserId]
+
+
+type GetUserByIdClientM = UserId -> GetUserClientM
+
+
 loginClient :: LoginClientM
 loginClient = client loginAPI
 
 
 sessionClient :: SessionClientM
 userClient :: UserClientM
-sessionClient :<|> userClient = client privateAPI
+usersClient :: UsersClientM
+sessionClient :<|> userClient :<|> usersClient = client privateAPI
 
 
 getSessionClient :: GetSessionClientM
@@ -50,3 +62,8 @@ getSessionClient :<|> deleteSessionClient = sessionClient
 
 getUserClient :: GetUserClientM
 getUserClient = userClient
+
+
+getUsersClient :: GetUsersClientM
+getUserByIdClient :: GetUserByIdClientM
+getUsersClient :<|> getUserByIdClient = usersClient

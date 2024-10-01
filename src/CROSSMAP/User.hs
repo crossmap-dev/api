@@ -10,11 +10,33 @@ import Data.Aeson
 import Data.Text
 import Data.Time
 import Data.UUID
+import Servant
 
 import CROSSMAP.PublicKey
 
 
 newtype UserId = UserId { unUserId :: UUID } deriving (Eq, Show)
+
+
+instance FromHttpApiData UserId where
+  parseUrlPiece t = case fromText t of
+    Just uuid -> Right $ UserId uuid
+    Nothing -> Left "Invalid UUID"
+
+
+instance FromJSON UserId where
+  parseJSON (String s) = case fromText s of
+    Just uuid -> return $ UserId uuid
+    Nothing -> fail "Invalid UUID"
+  parseJSON _ = fail "Expected string"
+
+
+instance ToHttpApiData UserId where
+  toUrlPiece (UserId uuid) = toText uuid
+
+
+instance ToJSON UserId where
+  toJSON (UserId uuid) = String $ toText uuid
 
 
 data UserResponse = UserResponse

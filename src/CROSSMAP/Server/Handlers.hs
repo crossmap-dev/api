@@ -6,6 +6,8 @@ module CROSSMAP.Server.Handlers
   , getSessionHandler
   , deleteSessionHandler
   , getUserHandler
+  , getUsersHandler
+  , getUserByIdHandler
   ) where
 
 import Control.Monad.IO.Class
@@ -105,6 +107,30 @@ getUserHandler State{..} SignatureInfo{..} = do
   result0 <- liftIO $ runQuery pool $ getUser $ unUserId publicKeyInfoUser
   result1 <- liftIO $ runQuery pool $ getUserUsernames publicKeyInfoUser
   result2 <- liftIO $ runQuery pool $ listUserPublicKeys publicKeyInfoUser
+  case (result0, result1, result2) of
+    (Right (Just user), Right usernames, Right publicKeys) -> return $ UserResponse
+      { userResponseUserId = unUserId user
+      , userResponseUsernames = fmap username usernames
+      , userResponsePublicKeys = publicKeys
+      }
+    _ -> throwError err500 { errBody = "Database error" }
+
+
+getUsersHandler :: State -> SignatureInfo -> Handler [UserId]
+getUsersHandler State{..} SignatureInfo{..} = do
+  ensureSession signatureInfoPublicKeyInfo
+  result <- liftIO $ runQuery pool $ getUsers
+  case result of
+    Right users -> return users
+    _ -> throwError err500 { errBody = "Database error" }
+
+
+getUserByIdHandler :: State -> SignatureInfo -> UserId -> Handler UserResponse
+getUserByIdHandler State{..} SignatureInfo{..} userId = do
+  ensureSession signatureInfoPublicKeyInfo
+  result0 <- liftIO $ runQuery pool $ getUser $ unUserId userId
+  result1 <- liftIO $ runQuery pool $ getUserUsernames userId
+  result2 <- liftIO $ runQuery pool $ listUserPublicKeys userId
   case (result0, result1, result2) of
     (Right (Just user), Right usernames, Right publicKeys) -> return $ UserResponse
       { userResponseUserId = unUserId user

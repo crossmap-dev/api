@@ -53,7 +53,10 @@ jobs:
 
     - name: Build
       shell: sh
-      run: ./bin/build.sh
+      run: |
+        echo "CABAL STORE: ${{ steps.setup.outputs.cabal-store }}"
+        cabal install hpack
+        ./bin/build.sh
 
     - name: Run tests
       shell: sh

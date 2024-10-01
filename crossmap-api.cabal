@@ -56,6 +56,11 @@ library
       CROSSMAP.Server.DB.Session
       CROSSMAP.Server.DB.User
       CROSSMAP.Server.Handlers
+      CROSSMAP.Server.Handlers.Login
+      CROSSMAP.Server.Handlers.Session
+      CROSSMAP.Server.Handlers.User
+      CROSSMAP.Server.Handlers.Users
+      CROSSMAP.Server.Helpers
       CROSSMAP.Server.Init
       CROSSMAP.Server.Socket
       CROSSMAP.Server.State

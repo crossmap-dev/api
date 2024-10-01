@@ -17,11 +17,11 @@ import qualified Hasql.Encoders as E
 import qualified Hasql.Decoders as D
 
 import CROSSMAP.Server.DB.PublicKey
-import CROSSMAP.Server.DB.User (User(..))
+import CROSSMAP.User (UserId(..))
 
 
 data Session = Session
-  { sessionUser :: User
+  { sessionUser :: UserId
   , sessionPublicKey :: PublicKey
   , sessionAddress :: IPRange
   } deriving (Eq, Show)
@@ -39,7 +39,7 @@ insertSessionStatement = Statement sql encoder decoder False where
         \(user_uuid, public_key, address) \
         \VALUES ($1, $2, $3)"
   encoder
-    =  ((userId . sessionUser) >$< E.param (E.nonNullable E.uuid))
+    =  ((unUserId . sessionUser) >$< E.param (E.nonNullable E.uuid))
     <> (unPublicKey . sessionPublicKey >$< E.param (E.nonNullable E.bytea))
     <> (sessionAddress >$< E.param (E.nonNullable E.inet))
   decoder = D.noResult
@@ -47,8 +47,8 @@ insertSessionStatement = Statement sql encoder decoder False where
 
 deleteSession :: Session -> Transaction ()
 deleteSession session = do
-  let User{..} = sessionUser session
-  statement (userId, sessionPublicKey session) deleteSessionStatement
+  let UserId{..} = sessionUser session
+  statement (unUserId, sessionPublicKey session) deleteSessionStatement
   deletePublicKey (sessionPublicKey session)
 
 

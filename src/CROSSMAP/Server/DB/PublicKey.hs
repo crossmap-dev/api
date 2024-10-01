@@ -20,8 +20,7 @@ import qualified Hasql.Encoders as E
 import qualified Hasql.Decoders as D
 
 import CROSSMAP.PublicKey (Base64PublicKey(..))
-import CROSSMAP.Server.DB.User (User(..))
-import CROSSMAP.User (UserPublicKey(..))
+import CROSSMAP.User (UserId(..), UserPublicKey(..))
 
 
 data PublicKeyType = UserKey | SessionKey deriving (Eq, Show)
@@ -29,7 +28,7 @@ data PublicKeyType = UserKey | SessionKey deriving (Eq, Show)
 
 data PublicKeyInfo = PublicKeyInfo
   { publicKeyInfoType :: PublicKeyType
-  , publicKeyInfoUser :: User
+  , publicKeyInfoUser :: UserId
   , publicKeyInfoPublicKey :: PublicKey
   , publicKeyInfoCreated :: UTCTime
   , publicKeyInfoExpires :: UTCTime
@@ -64,35 +63,35 @@ deletePublicKeyStatement = Statement sql encoder decoder False where
   decoder = D.noResult
 
 
-insertUserPublicKey :: User -> UTCTime -> UTCTime -> PublicKey -> Transaction ()
+insertUserPublicKey :: UserId -> UTCTime -> UTCTime -> PublicKey -> Transaction ()
 insertUserPublicKey user created expires publicKey = do
   insertPublicKey created expires publicKey
   statement (user, publicKey) insertUserPublicKeyStatement
 
 
-insertUserPublicKeyStatement :: Statement (User, PublicKey) ()
+insertUserPublicKeyStatement :: Statement (UserId, PublicKey) ()
 insertUserPublicKeyStatement = Statement sql encoder decoder False where
   sql = "INSERT INTO users_public_keys \
         \(user_uuid, public_key) \
         \VALUES ($1, $2)"
   encoder
-    =  ((userId . fst) >$< E.param (E.nonNullable E.uuid))
+    =  ((unUserId . fst) >$< E.param (E.nonNullable E.uuid))
     <> (unPublicKey . snd >$< E.param (E.nonNullable E.bytea))
   decoder = D.noResult
 
 
-deleteUserPublicKey :: User -> PublicKey -> Transaction ()
+deleteUserPublicKey :: UserId -> PublicKey -> Transaction ()
 deleteUserPublicKey user publicKey = do
   statement (user, publicKey) deleteUserPublicKeyStatement
   deletePublicKey publicKey
 
 
-deleteUserPublicKeyStatement :: Statement (User, PublicKey) ()
+deleteUserPublicKeyStatement :: Statement (UserId, PublicKey) ()
 deleteUserPublicKeyStatement = Statement sql encoder decoder False where
   sql = "DELETE FROM users_public_keys \
         \WHERE user_uuid = $1 AND public_key = $2"
   encoder
-    =  (userId . fst >$< E.param (E.nonNullable E.uuid))
+    =  (unUserId . fst >$< E.param (E.nonNullable E.uuid))
     <> (unPublicKey . snd >$< E.param (E.nonNullable E.bytea))
   decoder = D.noResult
 
@@ -134,11 +133,11 @@ lookupPublicKeyStatement = Statement sql encoder decoder True where
   decoder = D.rowMaybe publicKeyInfoDecoder
 
 
-listUserPublicKeys :: User -> Transaction [UserPublicKey]
+listUserPublicKeys :: UserId -> Transaction [UserPublicKey]
 listUserPublicKeys user = statement user listUserPublicKeysStatement
 
 
-listUserPublicKeysStatement :: Statement User [UserPublicKey]
+listUserPublicKeysStatement :: Statement UserId [UserPublicKey]
 listUserPublicKeysStatement = Statement sql encoder decoder True where
   sql = "SELECT \
         \  users_public_keys.public_key, \
@@ -152,7 +151,7 @@ listUserPublicKeysStatement = Statement sql encoder decoder True where
         \  users_public_keys.public_key = public_keys.public_key \
         \WHERE \
         \  users_public_keys.user_uuid = $1"
-  encoder = userId >$< E.param (E.nonNullable E.uuid)
+  encoder = unUserId >$< E.param (E.nonNullable E.uuid)
   decoder = D.rowList $ UserPublicKey <$>
     D.column (D.nonNullable ((Base64PublicKey . PublicKey) <$> D.bytea)) <*>
     D.column (D.nonNullable D.timestamptz) <*>
@@ -162,7 +161,7 @@ listUserPublicKeysStatement = Statement sql encoder decoder True where
 publicKeyInfoDecoder :: D.Row PublicKeyInfo
 publicKeyInfoDecoder = PublicKeyInfo
   <$> D.column (D.nonNullable publicKeyTypeDecoder)
-  <*> D.column (D.nonNullable (User <$> D.uuid))
+  <*> D.column (D.nonNullable (UserId <$> D.uuid))
   <*> D.column (D.nonNullable (PublicKey <$> D.bytea))
   <*> D.column (D.nonNullable D.timestamptz)
   <*> D.column (D.nonNullable D.timestamptz)

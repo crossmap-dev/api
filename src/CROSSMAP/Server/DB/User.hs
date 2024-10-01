@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CROSSMAP.Server.DB.User
-  ( User(..)
-  , Username(..)
+  ( Username(..)
   , getUser
   , getUsers
   , getUserByUsername
@@ -21,44 +20,43 @@ import Hasql.Transaction (Transaction, statement)
 import qualified Hasql.Encoders as E
 import qualified Hasql.Decoders as D
 
-
-newtype User = User { userId :: UUID } deriving (Eq, Show)
-
-
-data Username = Username { usernameUser :: User, username :: Text } deriving (Eq, Show)
+import CROSSMAP.User
 
 
-getUser :: UUID -> Transaction (Maybe User)
+data Username = Username { usernameUser :: UserId, username :: Text } deriving (Eq, Show)
+
+
+getUser :: UUID -> Transaction (Maybe UserId)
 getUser uuid = statement uuid getUserStatement
 
 
-getUserStatement :: Statement UUID (Maybe User)
+getUserStatement :: Statement UUID (Maybe UserId)
 getUserStatement = Statement sql encoder decoder True where
   sql = "SELECT uuid FROM users WHERE uuid = $1"
   encoder = E.param (E.nonNullable E.uuid)
-  decoder = D.rowMaybe (User <$> D.column (D.nonNullable D.uuid))
+  decoder = D.rowMaybe (UserId <$> D.column (D.nonNullable D.uuid))
 
 
-getUsers :: Transaction [User]
+getUsers :: Transaction [UserId]
 getUsers = statement () getUsersStatement
 
 
-getUsersStatement :: Statement () [User]
+getUsersStatement :: Statement () [UserId]
 getUsersStatement = Statement sql encoder decoder True where
   sql = "SELECT uuid FROM users"
   encoder = E.noParams
-  decoder = D.rowList (User <$> D.column (D.nonNullable D.uuid))
+  decoder = D.rowList (UserId <$> D.column (D.nonNullable D.uuid))
 
 
-getUserByUsername :: Text -> Transaction (Maybe User)
+getUserByUsername :: Text -> Transaction (Maybe UserId)
 getUserByUsername = flip statement getUserByUsernameStatement
 
 
-getUserByUsernameStatement :: Statement Text (Maybe User)
+getUserByUsernameStatement :: Statement Text (Maybe UserId)
 getUserByUsernameStatement = Statement sql encoder decoder True where
   sql = "SELECT user_uuid FROM users_names WHERE name = $1"
   encoder = E.param (E.nonNullable E.text)
-  decoder = D.rowMaybe (User <$> D.column (D.nonNullable D.uuid))
+  decoder = D.rowMaybe (UserId <$> D.column (D.nonNullable D.uuid))
 
 
 getUsernames :: Transaction [Username]
@@ -71,32 +69,32 @@ getUsernamesStatement = Statement sql encoder decoder True where
   encoder = E.noParams
   decoder = D.rowList userNameDecoder
   userNameDecoder = Username
-    <$> (User <$> D.column (D.nonNullable D.uuid))
+    <$> (UserId <$> D.column (D.nonNullable D.uuid))
     <*> D.column (D.nonNullable D.text)
 
 
-getUserUsernames :: User -> Transaction [Username]
+getUserUsernames :: UserId -> Transaction [Username]
 getUserUsernames = flip statement getUserUsernamesStatement
 
 
-getUserUsernamesStatement :: Statement User [Username]
+getUserUsernamesStatement :: Statement UserId [Username]
 getUserUsernamesStatement = Statement sql encoder decoder True where
   sql = "SELECT user_uuid, name FROM users_names WHERE user_uuid = $1"
-  encoder = userId >$< E.param (E.nonNullable E.uuid)
+  encoder = unUserId >$< E.param (E.nonNullable E.uuid)
   decoder = D.rowList userNameDecoder
   userNameDecoder = Username
-    <$> (User <$> D.column (D.nonNullable D.uuid))
+    <$> (UserId <$> D.column (D.nonNullable D.uuid))
     <*> D.column (D.nonNullable D.text)
 
 
-insertUser :: User -> Transaction ()
+insertUser :: UserId -> Transaction ()
 insertUser = flip statement insertUserStatement
 
 
-insertUserStatement :: Statement User ()
+insertUserStatement :: Statement UserId ()
 insertUserStatement = Statement sql encoder decoder False where
   sql = "INSERT INTO users (uuid) VALUES ($1)"
-  encoder = userId >$< E.param (E.nonNullable E.uuid)
+  encoder = unUserId >$< E.param (E.nonNullable E.uuid)
   decoder = D.noResult
 
 
@@ -109,18 +107,18 @@ insertUsernameStatement = Statement sql encoder decoder False where
   sql = "INSERT INTO users_names (user_uuid, name) VALUES ($1, $2)"
   encoder :: E.Params Username
   encoder
-    =  ((userId . usernameUser) >$< E.param (E.nonNullable E.uuid))
+    =  ((unUserId . usernameUser) >$< E.param (E.nonNullable E.uuid))
     <> (username >$< E.param (E.nonNullable E.text))
   decoder = D.noResult
 
 
-insertUserWithName :: User -> Text -> Transaction ()
+insertUserWithName :: UserId -> Text -> Transaction ()
 insertUserWithName user name = do
   insertUser user
   insertUsername (Username user name)
 
 
-userHasName :: User -> Text -> Transaction Bool
+userHasName :: UserId -> Text -> Transaction Bool
 userHasName user name = do
   names <- getUserUsernames user
   return $ any ((== name) . username) names

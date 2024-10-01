@@ -3,6 +3,7 @@
 module CROSSMAP.User
   ( UserResponse(..)
   , UserPublicKey(..)
+  , UserId(..)
   ) where
 
 import Data.Aeson
@@ -11,6 +12,9 @@ import Data.Time
 import Data.UUID
 
 import CROSSMAP.PublicKey
+
+
+newtype UserId = UserId { unUserId :: UUID } deriving (Eq, Show)
 
 
 data UserResponse = UserResponse

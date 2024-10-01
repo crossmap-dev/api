@@ -24,7 +24,7 @@ import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.DB.Session
 import CROSSMAP.Server.DB.User
 import CROSSMAP.Server.State
-import CROSSMAP.User (UserResponse(..))
+import CROSSMAP.User (UserId(..), UserResponse(..))
 
 
 indexHandler :: State -> Handler IndexResponse
@@ -56,7 +56,7 @@ loginHandler State{..} SignatureInfo{..} loginReq = do
       case result' of
         Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
         Right () -> return $ LoginResponse
-          { loginResponseSessionUser = userId publicKeyInfoUser
+          { loginResponseSessionUser = unUserId publicKeyInfoUser
           , loginResponseSessionPublicKey = Base64PublicKey sessionPublicKey
           , loginResponseSessionCreatedAt = now
           , loginResponseSessionExpiresAt = expires
@@ -68,7 +68,7 @@ getSessionHandler _ SignatureInfo{..} = do
   ensureSession signatureInfoPublicKeyInfo
   return $ SessionResponse
     { sessionResponseSessionUser =
-      userId $ publicKeyInfoUser signatureInfoPublicKeyInfo
+      unUserId $ publicKeyInfoUser signatureInfoPublicKeyInfo
     , sessionResponseSessionPublicKey =
       Base64PublicKey $ publicKeyInfoPublicKey signatureInfoPublicKeyInfo
     , sessionResponseSessionCreatedAt =
@@ -101,12 +101,12 @@ getUserHandler :: State -> SignatureInfo -> Handler UserResponse
 getUserHandler State{..} SignatureInfo{..} = do
   ensureSession signatureInfoPublicKeyInfo
   let PublicKeyInfo{..} = signatureInfoPublicKeyInfo
-  result0 <- liftIO $ runQuery pool $ getUser $ userId publicKeyInfoUser
+  result0 <- liftIO $ runQuery pool $ getUser $ unUserId publicKeyInfoUser
   result1 <- liftIO $ runQuery pool $ getUserUsernames publicKeyInfoUser
   result2 <- liftIO $ runQuery pool $ listUserPublicKeys publicKeyInfoUser
   case (result0, result1, result2) of
     (Right (Just user), Right usernames, Right publicKeys) -> return $ UserResponse
-      { userResponseUserId = userId user
+      { userResponseUserId = unUserId user
       , userResponseUsernames = fmap username usernames
       , userResponsePublicKeys = publicKeys
       }

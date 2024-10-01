@@ -12,6 +12,7 @@ import CROSSMAP.Server.DB
 import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.DB.User
 import CROSSMAP.Server.State
+import CROSSMAP.User
 
 
 serverInit :: State -> PublicKey -> IO ()
@@ -22,10 +23,10 @@ serverInit State{..} publicKey = do
     Right (Just user) -> return user
     Right Nothing -> do
       adminId <- nextRandom
-      result1 <- runUpdate pool $ insertUserWithName (User adminId) "admin"
+      result1 <- runUpdate pool $ insertUserWithName (UserId adminId) "admin"
       case result1 of
         Left err -> error $ show err
-        Right _ -> return (User adminId)
+        Right _ -> return (UserId adminId)
 
   result2 <- runQuery pool $ lookupPublicKey publicKey
   case result2 of

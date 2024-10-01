@@ -2,10 +2,19 @@
 set -euxo pipefail
 
 # Fetch the latest changes
-git fetch origin --unshallow
+git fetch origin
 
-# Promote develop to main
+# Switch to the develop branch
+git checkout develop
+
+# Pull the latest changes
+git pull origin develop
+
+# Switch to the main branch
 git checkout main
+
+# Pull the latest changes
+git pull origin main
 
 # Merge develop into main
 git merge -s ort -X theirs develop -m "Merge develop into main"

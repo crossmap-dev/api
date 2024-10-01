@@ -7,6 +7,7 @@ module CROSSMAP.Server.DB.Policy
   , getPolicyByName
   , getPolicies
   , insertPolicy
+  , updatePolicy
   , matchPolicyRuleStatement
   ) where
 
@@ -151,6 +152,30 @@ insertPolicy policy = do
   statement policy insertPolicyStatement
   mapM_ (insertPolicyRule $ policyId policy) (policyRules policy)
   mapM_ (insertPolicyName $ policyId policy) (policyNames policy)
+
+
+updatePolicy :: Policy -> Transaction ()
+updatePolicy policy = do
+  statement policy deletePolicyNamesStatement
+  statement policy deletePolicyRulesStatement
+  mapM_ (insertPolicyRule $ policyId policy) (policyRules policy)
+  mapM_ (insertPolicyName $ policyId policy) (policyNames policy)
+
+
+deletePolicyNamesStatement :: Statement Policy ()
+deletePolicyNamesStatement = Statement sql encoder decoder True
+  where
+    sql = "DELETE FROM policies_names WHERE policy_uuid = $1"
+    encoder = unPolicyId . policyId >$< E.param (E.nonNullable E.uuid)
+    decoder = D.noResult
+
+
+deletePolicyRulesStatement :: Statement Policy ()
+deletePolicyRulesStatement = Statement sql encoder decoder True
+  where
+    sql = "DELETE FROM policies_rules WHERE policy_uuid = $1"
+    encoder = unPolicyId . policyId >$< E.param (E.nonNullable E.uuid)
+    decoder = D.noResult
 
 
 insertPolicyStatement :: Statement Policy ()

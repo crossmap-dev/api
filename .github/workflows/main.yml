@@ -29,6 +29,7 @@ jobs:
     needs: [version]
     uses: ./.github/workflows/ci.yml
     with:
+      tag: ${{ needs.version.outputs.version }}
       tags: |
         latest
         ${{ needs.version.outputs.version }}

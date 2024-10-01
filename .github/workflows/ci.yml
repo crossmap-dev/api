@@ -2,6 +2,9 @@ name: Continuous Integration
 on:
   workflow_call:
     inputs:
+      tag:
+        type: string
+        required: true
       tags:
         type: string
         required: true
@@ -59,7 +62,7 @@ jobs:
       shell: sh
       run: |
         echo "CABAL STORE: ${{ steps.setup.outputs.cabal-store }}"
-        ./bin/build.sh
+        ./bin/build.sh ${{ inputs.tag }}
 
     - name: Run tests
       shell: sh

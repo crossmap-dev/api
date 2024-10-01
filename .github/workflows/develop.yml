@@ -11,10 +11,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  sha:
+    name: Read SHA
+    runs-on: crossmap-dev-runners-k8s
+    container:
+      image: docker.io/debian:bookworm-slim
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+    steps:
+    - id: sha
+      name: Compute SHA
+      shell: bash
+      run: echo "sha=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
   ci:
     name: Continuous Integration
+    needs: [sha]
     uses: ./.github/workflows/ci.yml
     with:
+      tag: ${{ needs.sha.outputs.sha }}
       tags: |
         develop
         type=sha

@@ -140,7 +140,7 @@ listUserPublicKeys user = statement user listUserPublicKeysStatement
 
 listUserPublicKeysStatement :: Statement User [UserPublicKey]
 listUserPublicKeysStatement = Statement sql encoder decoder True where
-  sql = "SELECT 'user' as key_type, \
+  sql = "SELECT \
         \  users_public_keys.public_key, \
         \  public_keys.created_at, \
         \  public_keys.expires_at \

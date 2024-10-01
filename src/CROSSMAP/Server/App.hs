@@ -20,7 +20,7 @@ app :: State -> Application
 app state req respond =
   case websocketsApp defaultConnectionOptions socketHandler req of
     Just response -> respond response
-    Nothing -> (logStdout . realIp) application req respond
+    Nothing -> (realIp . logStdout) application req respond
   where
     authContext' = authContext state
     application = serveWithContext api authContext' $ server state

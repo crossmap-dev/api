@@ -25,10 +25,11 @@ import CROSSMAP.Server.DB.Session
 import CROSSMAP.Server.DB.User
 import CROSSMAP.Server.State
 import CROSSMAP.User (UserId(..), UserResponse(..))
+import CROSSMAP.Version
 
 
 indexHandler :: State -> Handler IndexResponse
-indexHandler _ = return $ IndexResponse "CROSSMAP"
+indexHandler _ = return $ IndexResponse "CROSSMAP" CROSSMAP.Version.version
 
 
 loginHandler :: State -> SignatureInfo -> LoginRequest -> Handler LoginResponse

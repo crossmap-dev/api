@@ -3,6 +3,7 @@ module CROSSMAP.Server.App
   ) where
 
 import Network.Wai
+import Network.Wai.Middleware.RealIp
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Handler.WebSockets
 import Network.WebSockets
@@ -19,7 +20,7 @@ app :: State -> Application
 app state req respond =
   case websocketsApp defaultConnectionOptions socketHandler req of
     Just response -> respond response
-    Nothing -> logStdout application req respond
+    Nothing -> (logStdout . realIp) application req respond
   where
     authContext' = authContext state
     application = serveWithContext api authContext' $ server state

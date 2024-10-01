@@ -1,14 +1,20 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 module CROSSMAP.Client.Command.User
   ( UserCommand(..)
   , userOptions
   , runUser
   ) where
 
+import Data.Text (unpack)
+import Data.UUID (toText)
 import Options.Applicative
 
 import CROSSMAP.Client
 import CROSSMAP.Client.API
 import CROSSMAP.Client.State
+import CROSSMAP.PublicKey
+import CROSSMAP.User
 
 
 data UserCommand = UserCommand deriving (Show)
@@ -31,4 +37,13 @@ runUser UserCommand = do
         Left err ->
           putStrLn $ "Error: " ++ show err
         Right u -> do
-          print u
+          putStrLn $ "User ID: " ++ unpack (toText (userResponseUserId u))
+          putStrLn "Usernames:"
+          mapM_ (putStrLn . unpack . ("- " <>)) (userResponseUsernames u)
+          putStrLn "Public keys:"
+          mapM_ putPublicKey (userResponsePublicKeys u)
+  where
+    putPublicKey UserPublicKey{..} = do
+      putStrLn $ "- Public key: " ++ unpack (base64PublicKeyToText userPublicKey)
+      putStrLn $ "  Created at: " ++ show userPublicKeyCreatedAt
+      putStrLn $ "  Expires at: " ++ show userPublicKeyExpiresAt

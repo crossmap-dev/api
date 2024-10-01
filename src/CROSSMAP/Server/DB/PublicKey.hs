@@ -6,6 +6,7 @@ module CROSSMAP.Server.DB.PublicKey
   , insertPublicKey
   , deletePublicKey
   , lookupPublicKey
+  , listUserPublicKeys
   , insertUserPublicKey
   , deleteUserPublicKey
   ) where
@@ -18,7 +19,9 @@ import Hasql.Transaction (Transaction, statement)
 import qualified Hasql.Encoders as E
 import qualified Hasql.Decoders as D
 
+import CROSSMAP.PublicKey (Base64PublicKey(..))
 import CROSSMAP.Server.DB.User (User(..))
+import CROSSMAP.User (UserPublicKey(..))
 
 
 data PublicKeyType = UserKey | SessionKey deriving (Eq, Show)
@@ -129,6 +132,31 @@ lookupPublicKeyStatement = Statement sql encoder decoder True where
         \  sessions.public_key = $1"
   encoder = unPublicKey >$< E.param (E.nonNullable E.bytea)
   decoder = D.rowMaybe publicKeyInfoDecoder
+
+
+listUserPublicKeys :: User -> Transaction [UserPublicKey]
+listUserPublicKeys user = statement user listUserPublicKeysStatement
+
+
+listUserPublicKeysStatement :: Statement User [UserPublicKey]
+listUserPublicKeysStatement = Statement sql encoder decoder True where
+  sql = "SELECT 'user' as key_type, \
+        \  users_public_keys.public_key, \
+        \  public_keys.created_at, \
+        \  public_keys.expires_at \
+        \FROM \
+        \  users_public_keys \
+        \JOIN \
+        \  public_keys \
+        \ON \
+        \  users_public_keys.public_key = public_keys.public_key \
+        \WHERE \
+        \  users_public_keys.user_uuid = $1"
+  encoder = userId >$< E.param (E.nonNullable E.uuid)
+  decoder = D.rowList $ UserPublicKey <$>
+    D.column (D.nonNullable ((Base64PublicKey . PublicKey) <$> D.bytea)) <*>
+    D.column (D.nonNullable D.timestamptz) <*>
+    D.column (D.nonNullable D.timestamptz)
 
 
 publicKeyInfoDecoder :: D.Row PublicKeyInfo

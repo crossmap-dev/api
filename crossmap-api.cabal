@@ -55,6 +55,7 @@ library
       CROSSMAP.Server.Socket
       CROSSMAP.Server.State
       CROSSMAP.Session
+      CROSSMAP.User
   other-modules:
       Paths_crossmap_api
   autogen-modules:

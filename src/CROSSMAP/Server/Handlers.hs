@@ -5,6 +5,7 @@ module CROSSMAP.Server.Handlers
   , loginHandler
   , getSessionHandler
   , deleteSessionHandler
+  , getUserHandler
   ) where
 
 import Control.Monad.IO.Class
@@ -23,6 +24,7 @@ import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.DB.Session
 import CROSSMAP.Server.DB.User
 import CROSSMAP.Server.State
+import CROSSMAP.User (UserResponse(..))
 
 
 indexHandler :: State -> Handler IndexResponse
@@ -93,6 +95,23 @@ deleteSessionHandler State{..} SignatureInfo{..} = do
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
     Right () -> return NoContent
+
+
+getUserHandler :: State -> SignatureInfo -> Handler UserResponse
+getUserHandler State{..} SignatureInfo{..} = do
+  ensureSession signatureInfoPublicKeyInfo
+  let PublicKeyInfo{..} = signatureInfoPublicKeyInfo
+  result0 <- liftIO $ runQuery pool $ getUser $ userId publicKeyInfoUser
+  result1 <- liftIO $ runQuery pool $ getUserUsernames publicKeyInfoUser
+  result2 <- liftIO $ runQuery pool $ listUserPublicKeys publicKeyInfoUser
+  case (result0, result1, result2) of
+    (Right (Just user), Right usernames, Right publicKeys) -> return $ UserResponse
+      { userResponseUserId = userId user
+      , userResponseUsernames = fmap username usernames
+      , userResponsePublicKeys = publicKeys
+      }
+    _ -> throwError err500 { errBody = "Database error" }
+
 
 
 ensureSession :: PublicKeyInfo -> Handler ()

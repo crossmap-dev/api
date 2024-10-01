@@ -28,7 +28,7 @@ jobs:
     needs: [sha]
     uses: ./.github/workflows/ci.yml
     with:
-      tag: ${{ needs.sha.outputs.sha }}
+      tag: sha-${{ needs.sha.outputs.sha }}
       tags: |
         develop
         type=sha

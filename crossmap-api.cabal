@@ -28,6 +28,8 @@ library
       CROSSMAP.Client
       CROSSMAP.Client.API
       CROSSMAP.Client.Command
+      CROSSMAP.Client.Command.Create
+      CROSSMAP.Client.Command.Create.User
       CROSSMAP.Client.Command.Get
       CROSSMAP.Client.Command.Get.User
       CROSSMAP.Client.Command.Keypair

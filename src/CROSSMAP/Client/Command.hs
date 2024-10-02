@@ -4,6 +4,7 @@ module CROSSMAP.Client.Command
 
 import Options.Applicative
 
+import CROSSMAP.Client.Command.Create
 import CROSSMAP.Client.Command.Get
 import CROSSMAP.Client.Command.Keypair
 import CROSSMAP.Client.Command.List
@@ -14,8 +15,9 @@ import CROSSMAP.Client.Command.User
 
 
 data Command
-  = Keypair KeypairCommand
+  = Create CreateCommand
   | Get GetCommand
+  | Keypair KeypairCommand
   | List ListCommand
   | Login LoginCommand
   | Logout LogoutCommand
@@ -43,6 +45,8 @@ options = Options <$> hsubparser
       ( info (List <$> listOptions) ( progDesc "List resources" ) )
   <> command "get"
       ( info (Get <$> getOptions) ( progDesc "Get a resource" ) )
+  <> command "create"
+      ( info (Create <$> createOptions) ( progDesc "Create a resource" ) )
   )
 
 
@@ -63,3 +67,4 @@ runWithOptions (Options (Session cmd)) = runSession cmd
 runWithOptions (Options (User cmd)) = runUser cmd
 runWithOptions (Options (List cmd)) = runList cmd
 runWithOptions (Options (Get cmd)) = runGet cmd
+runWithOptions (Options (Create cmd)) = runCreate cmd

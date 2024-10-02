@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           crossmap-api
-version:        0.0.8
+version:        0.0.9
 description:    Please see the README on GitHub at <https://github.com/crossmap-dev/api#readme>
 homepage:       https://github.com/crossmap-dev/api#readme
 bug-reports:    https://github.com/crossmap-dev/api/issues
@@ -50,6 +50,7 @@ library
       CROSSMAP.Server.Command
       CROSSMAP.Server.Config
       CROSSMAP.Server.DB
+      CROSSMAP.Server.DB.CreateUser
       CROSSMAP.Server.DB.Migration
       CROSSMAP.Server.DB.Policy
       CROSSMAP.Server.DB.PublicKey

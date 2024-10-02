@@ -40,5 +40,6 @@ userServer state sig = getUserHandler state sig
 usersServer :: State -> SignatureInfo -> Server UsersAPI
 usersServer state sig
   = getUsersHandler state sig
+  :<|> createUserHandler state sig
   :<|> getUserByIdHandler state sig
   :<|> getUserByUsernameHandler state sig

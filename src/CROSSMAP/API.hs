@@ -52,9 +52,10 @@ type UserAPI = GetUserEndpoint
 
 
 type UsersAPI
-  = Get '[JSON] [UserId]
-  :<|> Capture "user" UserId :> UserAPI
-  :<|> Capture "username" Text :> UserAPI
+  = ( Get '[JSON] [UserId] )
+  :<|> ( ReqBody '[JSON] CreateUserRequest :> Post '[JSON] UserResponse )
+  :<|> ( Capture "user" UserId :> UserAPI )
+  :<|> ( Capture "username" Text :> UserAPI )
 
 
 type IndexEndpoint = Get '[JSON] IndexResponse

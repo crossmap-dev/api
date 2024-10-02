@@ -6,6 +6,7 @@ module CROSSMAP.Client.API
   , deleteSessionClient
   , getUserClient
   , getUsersClient
+  , createUserClient
   , getUserByIdClient
   , getUserByUsernameClient
   ) where
@@ -29,7 +30,11 @@ type SessionClientM = GetSessionClientM :<|> DeleteSessionClientM
 type UserClientM = GetUserClientM
 
 
-type UsersClientM = GetUsersClientM :<|> GetUserByIdClientM :<|> GetUserByUsernameClientM
+type UsersClientM
+  = GetUsersClientM
+  :<|> CreateUserClientM
+  :<|> GetUserByIdClientM
+  :<|> GetUserByUsernameClientM
 
 
 type GetSessionClientM = ClientM SessionResponse
@@ -42,6 +47,9 @@ type GetUserClientM = ClientM UserResponse
 
 
 type GetUsersClientM = ClientM [UserId]
+
+
+type CreateUserClientM = CreateUserRequest -> ClientM UserResponse
 
 
 type GetUserByIdClientM = UserId -> GetUserClientM
@@ -70,6 +78,11 @@ getUserClient = userClient
 
 
 getUsersClient :: GetUsersClientM
+createUserClient :: CreateUserClientM
 getUserByIdClient :: GetUserByIdClientM
 getUserByUsernameClient :: GetUserByUsernameClientM
-getUsersClient :<|> getUserByIdClient :<|> getUserByUsernameClient = usersClient
+getUsersClient
+  :<|> createUserClient
+  :<|> getUserByIdClient
+  :<|> getUserByUsernameClient
+  = usersClient

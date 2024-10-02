@@ -1,22 +1,38 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 module CROSSMAP.Server.Handlers.User
-  ( getUserHandler
+  ( createUserHandler
+  , getUserHandler
   , getUserByIdHandler
   , getUserByUsernameHandler
   ) where
 
 import Control.Monad.IO.Class
 import Data.Text (Text)
+import Data.Time.Clock
+import Data.UUID.V4
 import Servant
 
 import CROSSMAP.Server.Auth
 import CROSSMAP.Server.DB
+import CROSSMAP.Server.DB.CreateUser
 import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.DB.User
 import CROSSMAP.Server.Helpers
 import CROSSMAP.Server.State
-import CROSSMAP.User (UserId(..), UserResponse(..))
+import CROSSMAP.User
+
+
+createUserHandler :: State -> SignatureInfo -> CreateUserRequest -> Handler UserResponse
+createUserHandler State{..} SignatureInfo{..} req = do
+  ensureSession signatureInfoPublicKeyInfo
+  userId <- UserId <$> liftIO nextRandom
+  now <- liftIO getCurrentTime
+  let expire = addUTCTime (60 * 60 * 24 * 30) now
+  result0 <- liftIO $ runUpdate pool $ createUser userId now expire req
+  case result0 of
+    Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
+    Right resp -> return resp
 
 
 getUserHandler :: State -> SignatureInfo -> Handler UserResponse

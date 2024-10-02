@@ -1,7 +1,8 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 module CROSSMAP.User
-  ( UserResponse(..)
+  ( CreateUserRequest(..)
+  , UserResponse(..)
   , UserPublicKey(..)
   , UserId(..)
   ) where
@@ -13,6 +14,26 @@ import Data.UUID
 import Servant
 
 import CROSSMAP.PublicKey
+
+
+data CreateUserRequest = CreateUserRequest
+  { createUserRequestUsernames :: [Text]
+  , createUserRequestPublicKeys :: [Base64PublicKey]
+  } deriving (Eq, Show)
+
+
+instance FromJSON CreateUserRequest where
+  parseJSON = withObject "CreateUserRequest" $ \o -> do
+    createUserRequestUsernames <- o .: "usernames"
+    createUserRequestPublicKeys <- o .: "publicKeys"
+    return CreateUserRequest{..}
+
+
+instance ToJSON CreateUserRequest where
+  toJSON CreateUserRequest{..} = object
+    [ "usernames" .= createUserRequestUsernames
+    , "publicKeys" .= createUserRequestPublicKeys
+    ]
 
 
 newtype UserId = UserId { unUserId :: UUID } deriving (Eq, Show)

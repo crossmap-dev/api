@@ -11,7 +11,7 @@ module CROSSMAP.Server.Auth
 import Control.Monad.IO.Class (liftIO)
 import Crypto.Sign.Ed25519
 import Data.ByteString
-import Data.ByteString.Base64
+import Data.ByteString.Base64.URL (decodeBase64Lenient)
 import Data.CaseInsensitive (original)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)

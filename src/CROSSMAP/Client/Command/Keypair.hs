@@ -7,7 +7,7 @@ module CROSSMAP.Client.Command.Keypair
 
 import Crypto.Sign.Ed25519
 import Data.Base64.Types
-import Data.ByteString.Base64
+import Data.ByteString.Base64.URL
 import Data.Text
 import Options.Applicative
 

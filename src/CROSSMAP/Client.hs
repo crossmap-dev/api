@@ -7,7 +7,7 @@ module CROSSMAP.Client
   ) where
 
 import Data.Base64.Types
-import Data.ByteString.Base64
+import Data.ByteString.Base64.URL
 import Data.Text
 import Data.Text.Encoding
 import Data.UUID

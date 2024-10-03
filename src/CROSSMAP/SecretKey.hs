@@ -6,7 +6,7 @@ module CROSSMAP.SecretKey
 import Crypto.Sign.Ed25519 (SecretKey(..))
 import Data.Base64.Types
 import Data.ByteString
-import Data.ByteString.Base64
+import Data.ByteString.Base64.URL
 import Data.Text
 import Data.Text.Encoding
 

@@ -10,8 +10,7 @@ import Crypto.Sign.Ed25519 (PublicKey(..))
 import Data.Aeson
 import Data.Base64.Types
 import Data.ByteString
-import Data.ByteString.Base64 (decodeBase64Lenient)
-import Data.ByteString.Base64.URL (encodeBase64)
+import Data.ByteString.Base64.URL
 import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
 import Servant

@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module CROSSMAP.PublicKey
   ( Base64PublicKey(..)
   , base64PublicKeyToText
@@ -12,11 +13,19 @@ import Data.ByteString
 import Data.ByteString.Base64
 import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
+import Servant
 
 
 newtype Base64PublicKey = Base64PublicKey
   { unBase64PublicKey :: PublicKey }
   deriving (Eq, Show)
+
+
+instance FromHttpApiData Base64PublicKey where
+  parseUrlPiece t =
+    case publicKeyFromText t of
+      Just pk -> Right $ Base64PublicKey pk
+      Nothing -> Left "Expected a base64 encoded string"
 
 
 instance FromJSON Base64PublicKey where
@@ -25,6 +34,10 @@ instance FromJSON Base64PublicKey where
       Just pk -> return $ Base64PublicKey pk
       Nothing -> fail "Expected a base64 encoded string"
   parseJSON _ = fail "Expected a base64 encoded string"
+
+
+instance ToHttpApiData Base64PublicKey where
+  toUrlPiece (Base64PublicKey pk) = publicKeyToText pk
 
 
 instance ToJSON Base64PublicKey where

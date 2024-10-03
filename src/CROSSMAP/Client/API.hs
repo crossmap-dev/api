@@ -1,7 +1,8 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 module CROSSMAP.Client.API
-  ( loginClient
+  ( SessionClient(..)
+  , loginClient
   , getSessionClient
   , deleteSessionClient
   , getUserClient
@@ -9,6 +10,8 @@ module CROSSMAP.Client.API
   , createUserClient
   , getUserByIdClient
   , getUserByUsernameClient
+  , getSessionsClient
+  , getSessionClientByPublicKey
   ) where
 
 import Data.Text (Text)
@@ -17,6 +20,7 @@ import Servant.Client
 
 import CROSSMAP.API
 import CROSSMAP.Login
+import CROSSMAP.PublicKey
 import CROSSMAP.Session
 import CROSSMAP.User
 
@@ -25,6 +29,9 @@ type LoginClientM = LoginRequest -> ClientM LoginResponse
 
 
 type SessionClientM = GetSessionClientM :<|> DeleteSessionClientM
+
+
+type SessionsClientM = GetSessionsClientM :<|> (Base64PublicKey -> SessionClientM)
 
 
 type UserClientM = GetUserClientM
@@ -58,6 +65,15 @@ type GetUserByIdClientM = UserId -> GetUserClientM
 type GetUserByUsernameClientM = Text -> GetUserClientM
 
 
+type GetSessionsClientM = ClientM [Base64PublicKey]
+
+
+data SessionClient = SessionClient
+  { getSession :: GetSessionClientM
+  , deleteSession :: DeleteSessionClientM
+  }
+
+
 loginClient :: LoginClientM
 loginClient = client loginAPI
 
@@ -65,7 +81,8 @@ loginClient = client loginAPI
 sessionClient :: SessionClientM
 userClient :: UserClientM
 usersClient :: UsersClientM
-sessionClient :<|> userClient :<|> usersClient = client privateAPI
+sessionsClient :: SessionsClientM
+sessionClient :<|> userClient :<|> usersClient :<|> sessionsClient = client privateAPI
 
 
 getSessionClient :: GetSessionClientM
@@ -86,3 +103,14 @@ getUsersClient
   :<|> getUserByIdClient
   :<|> getUserByUsernameClient
   = usersClient
+
+
+getSessionsClient :: GetSessionsClientM
+sessionClientByPublicKey :: Base64PublicKey -> SessionClientM
+getSessionsClient :<|> sessionClientByPublicKey = sessionsClient
+
+
+getSessionClientByPublicKey :: Base64PublicKey -> SessionClient
+getSessionClientByPublicKey pk =
+  let getSession' :<|> deleteSession' = sessionClientByPublicKey pk
+   in SessionClient { getSession = getSession', deleteSession = deleteSession' }

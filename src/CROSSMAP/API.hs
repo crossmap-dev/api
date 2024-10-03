@@ -7,6 +7,7 @@ module CROSSMAP.API
   , SecureUserAPI
   , SecureSessionAPI
   , SessionAPI
+  , SessionsAPI
   , UserAPI
   , UsersAPI
   , api
@@ -20,6 +21,7 @@ import Servant
 
 import CROSSMAP.Index
 import CROSSMAP.Login
+import CROSSMAP.PublicKey
 import CROSSMAP.Session
 import CROSSMAP.User
 
@@ -37,6 +39,7 @@ type PrivateAPI
   = "session" :> SessionAPI
   :<|> "user" :> UserAPI
   :<|> "users" :> UsersAPI
+  :<|> "sessions" :> SessionsAPI
 
 
 type SecureUserAPI = AuthProtect "signature" :> LoginAPI
@@ -46,6 +49,11 @@ type SecureSessionAPI = AuthProtect "signature" :> PrivateAPI
 
 
 type SessionAPI = GetSessionEndpoint :<|> DeleteSessionEndpoint
+
+
+type SessionsAPI
+  = ( Get '[JSON] [Base64PublicKey] )
+  :<|> ( Capture "session" Base64PublicKey :> SessionAPI )
 
 
 type UserAPI = GetUserEndpoint

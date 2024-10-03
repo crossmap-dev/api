@@ -2,12 +2,12 @@
 {-# LANGUAGE RecordWildCards #-}
 module CROSSMAP.Server.Handlers.Session
   ( getSessionHandler
+  , getSessionByPublicKeyHandler
   , deleteSessionHandler
+  , deleteSessionByPublicKeyHandler
   ) where
 
 import Control.Monad.IO.Class
-import Data.IP
-import Network.Socket
 import Servant
 
 import CROSSMAP.PublicKey
@@ -36,20 +36,32 @@ getSessionHandler _ SignatureInfo{..} = do
     }
 
 
+getSessionByPublicKeyHandler ::
+  State -> SignatureInfo -> Base64PublicKey -> Handler SessionResponse
+getSessionByPublicKeyHandler State{..} SignatureInfo{..} (Base64PublicKey pk) = do
+  ensureSession signatureInfoPublicKeyInfo
+  result <- liftIO $ runQuery pool $ getSession pk
+  case result of
+    Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
+    Right Nothing -> throwError err404 { errBody = "Session not found" }
+    Right (Just session) -> return session
+
+
 deleteSessionHandler :: State -> SignatureInfo -> Handler NoContent
 deleteSessionHandler State{..} SignatureInfo{..} = do
   ensureSession signatureInfoPublicKeyInfo
   let PublicKeyInfo{..} = signatureInfoPublicKeyInfo
-  result <- liftIO $ runUpdate pool $ deleteSession $ Session
-    { sessionUser = publicKeyInfoUser
-    , sessionPublicKey = publicKeyInfoPublicKey
-    , sessionAddress = case signatureInfoSocketAddr of
-        SockAddrInet _ addr ->
-          IPv4Range $ makeAddrRange (fromHostAddress addr) 32
-        SockAddrInet6 _ _ addr _ ->
-          IPv6Range $ makeAddrRange (fromHostAddress6 addr) 128
-        _ -> error "Unsupported socket address"
-    }
+  result <- liftIO $ runUpdate pool $ deleteSession publicKeyInfoUser publicKeyInfoPublicKey
+  case result of
+    Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
+    Right () -> return NoContent
+
+
+deleteSessionByPublicKeyHandler ::
+  State -> SignatureInfo -> Base64PublicKey -> Handler NoContent
+deleteSessionByPublicKeyHandler State{..} SignatureInfo{..} (Base64PublicKey pk) = do
+  ensureSession signatureInfoPublicKeyInfo
+  result <- liftIO $ runUpdate pool $ deleteSessionByPublicKey pk
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
     Right () -> return NoContent

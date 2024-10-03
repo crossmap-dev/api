@@ -61,6 +61,7 @@ library
       CROSSMAP.Server.Handlers
       CROSSMAP.Server.Handlers.Login
       CROSSMAP.Server.Handlers.Session
+      CROSSMAP.Server.Handlers.Sessions
       CROSSMAP.Server.Handlers.User
       CROSSMAP.Server.Handlers.Users
       CROSSMAP.Server.Helpers

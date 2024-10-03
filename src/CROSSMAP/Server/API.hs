@@ -5,6 +5,7 @@ module CROSSMAP.Server.API
 import Servant
 
 import CROSSMAP.API
+import CROSSMAP.PublicKey
 import CROSSMAP.Server.Auth
 import CROSSMAP.Server.Handlers
 import CROSSMAP.Server.State
@@ -27,6 +28,7 @@ secureServer state sig
   = sessionServer state sig
   :<|> userServer state sig
   :<|> usersServer state sig
+  :<|> sessionsServer state sig
 
 
 sessionServer :: State -> SignatureInfo -> Server SessionAPI
@@ -43,3 +45,15 @@ usersServer state sig
   :<|> createUserHandler state sig
   :<|> getUserByIdHandler state sig
   :<|> getUserByUsernameHandler state sig
+
+
+sessionsServer :: State -> SignatureInfo -> Server SessionsAPI
+sessionsServer state sig
+  = getSessionsHandler state sig
+  :<|> sessionByPublicKeyServer state sig
+
+
+sessionByPublicKeyServer :: State -> SignatureInfo -> Base64PublicKey -> Server SessionAPI
+sessionByPublicKeyServer state sig pk
+  = getSessionByPublicKeyHandler state sig pk
+  :<|> deleteSessionByPublicKeyHandler state sig pk

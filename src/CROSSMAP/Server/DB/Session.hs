@@ -2,8 +2,11 @@
 {-# LANGUAGE RecordWildCards #-}
 module CROSSMAP.Server.DB.Session
   ( Session(..)
+  , getSession
+  , getSessions
   , insertSession
   , deleteSession
+  , deleteSessionByPublicKey
   ) where
 
 import Crypto.Sign.Ed25519 (PublicKey(..))
@@ -16,7 +19,9 @@ import Hasql.Transaction (Transaction, statement)
 import qualified Hasql.Encoders as E
 import qualified Hasql.Decoders as D
 
+import CROSSMAP.PublicKey (Base64PublicKey(..))
 import CROSSMAP.Server.DB.PublicKey
+import CROSSMAP.Session
 import CROSSMAP.User (UserId(..))
 
 
@@ -25,6 +30,40 @@ data Session = Session
   , sessionPublicKey :: PublicKey
   , sessionAddress :: IPRange
   } deriving (Eq, Show)
+
+
+getSessions :: Transaction [PublicKey]
+getSessions = statement () getSessionsStatement
+
+
+getSessionsStatement :: Statement () [PublicKey]
+getSessionsStatement = Statement sql encoder decoder True where
+  sql = "SELECT public_key FROM sessions"
+  encoder = E.noParams
+  decoder = D.rowList (PublicKey <$> D.column (D.nonNullable D.bytea))
+
+
+getSession :: PublicKey -> Transaction (Maybe SessionResponse)
+getSession publicKey = statement publicKey getSessionStatement
+
+
+getSessionStatement :: Statement PublicKey (Maybe SessionResponse)
+getSessionStatement = Statement sql encoder decoder True where
+  sql = "SELECT \
+        \  sessions.user_uuid, \
+        \  sessions.public_key, \
+        \  public_keys.created_at, \
+        \  public_keys.expires_at \
+        \FROM \
+        \  sessions \
+        \WHERE \
+        \  public_key = $1"
+  encoder = unPublicKey >$< E.param (E.nonNullable E.bytea)
+  decoder = D.rowMaybe $ SessionResponse
+    <$> (D.column (D.nonNullable D.uuid))
+    <*> (Base64PublicKey . PublicKey <$> D.column (D.nonNullable D.bytea))
+    <*> D.column (D.nonNullable D.timestamptz)
+    <*> D.column (D.nonNullable D.timestamptz)
 
 
 insertSession :: UTCTime -> UTCTime -> Session -> Transaction ()
@@ -45,11 +84,10 @@ insertSessionStatement = Statement sql encoder decoder False where
   decoder = D.noResult
 
 
-deleteSession :: Session -> Transaction ()
-deleteSession session = do
-  let UserId{..} = sessionUser session
-  statement (unUserId, sessionPublicKey session) deleteSessionStatement
-  deletePublicKey (sessionPublicKey session)
+deleteSession :: UserId -> PublicKey -> Transaction ()
+deleteSession uid pk = do
+  statement (unUserId uid, pk) deleteSessionStatement
+  deletePublicKey (pk)
 
 
 deleteSessionStatement :: Statement (UUID, PublicKey) ()
@@ -58,4 +96,17 @@ deleteSessionStatement = Statement sql encoder decoder False where
   encoder
     =  (fst >$< E.param (E.nonNullable E.uuid))
     <> (unPublicKey . snd >$< E.param (E.nonNullable E.bytea))
+  decoder = D.noResult
+
+
+deleteSessionByPublicKey :: PublicKey -> Transaction ()
+deleteSessionByPublicKey pk = do
+  statement pk deleteSessionByPublicKeyStatement
+  deletePublicKey pk
+
+
+deleteSessionByPublicKeyStatement :: Statement PublicKey ()
+deleteSessionByPublicKeyStatement = Statement sql encoder decoder False where
+  sql = "DELETE FROM sessions WHERE public_key = $1"
+  encoder = unPublicKey >$< E.param (E.nonNullable E.bytea)
   decoder = D.noResult

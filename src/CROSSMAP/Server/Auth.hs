@@ -11,7 +11,7 @@ module CROSSMAP.Server.Auth
 import Control.Monad.IO.Class (liftIO)
 import Crypto.Sign.Ed25519
 import Data.ByteString
-import Data.ByteString.Base64.URL (decodeBase64Lenient)
+import Data.ByteString.Base64.URL
 import Data.CaseInsensitive (original)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
@@ -117,7 +117,7 @@ ensureValidSignature authHeader stringToSign' publicKey = do
   -- authHeader is expected to be in the format "Signature <signature>"
   case Data.ByteString.splitAt 10 authHeader of
     ("Signature ", signatureBase64) -> do
-      let signature = Data.ByteString.Base64.decodeBase64Lenient signatureBase64
+      let signature = decodeBase64Lenient signatureBase64
       if Crypto.Sign.Ed25519.dverify publicKey stringToSign' $ Signature signature
         then return ()
         else throwError $ err401 { errBody = "Invalid signature" }

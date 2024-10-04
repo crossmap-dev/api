@@ -56,6 +56,10 @@ getSessionStatement = Statement sql encoder decoder True where
         \  public_keys.expires_at \
         \FROM \
         \  sessions \
+        \JOIN \
+        \  public_keys \
+        \ON \
+        \  sessions.public_key = public_keys.public_key \
         \WHERE \
         \  public_key = $1"
   encoder = unPublicKey >$< E.param (E.nonNullable E.bytea)

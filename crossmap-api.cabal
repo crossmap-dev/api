@@ -34,6 +34,7 @@ library
       CROSSMAP.Client.Command.Get.User
       CROSSMAP.Client.Command.Keypair
       CROSSMAP.Client.Command.List
+      CROSSMAP.Client.Command.List.Sessions
       CROSSMAP.Client.Command.List.Users
       CROSSMAP.Client.Command.Login
       CROSSMAP.Client.Command.Logout

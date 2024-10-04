@@ -61,7 +61,7 @@ getSessionStatement = Statement sql encoder decoder True where
         \ON \
         \  sessions.public_key = public_keys.public_key \
         \WHERE \
-        \  public_key = $1"
+        \  sessions.public_key = $1"
   encoder = unPublicKey >$< E.param (E.nonNullable E.bytea)
   decoder = D.rowMaybe $ SessionResponse
     <$> (D.column (D.nonNullable D.uuid))

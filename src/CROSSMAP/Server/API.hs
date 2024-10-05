@@ -52,7 +52,14 @@ publicKeysServer :: State -> SignatureInfo -> Server PublicKeysAPI
 publicKeysServer state sig
   = getPublicKeysHandler state sig
   :<|> createPublicKeyHandler state sig
-  :<|> getPublicKeyHandler state sig
+  :<|> publicKeyByPublicKeyServer state sig
+
+
+publicKeyByPublicKeyServer ::
+  State -> SignatureInfo -> Base64PublicKey -> Server PublicKeyAPI
+publicKeyByPublicKeyServer state sig pk
+  = getPublicKeyHandler state sig pk
+  :<|> deletePublicKeyHandler state sig pk
 
 
 sessionsServer :: State -> SignatureInfo -> Server SessionsAPI

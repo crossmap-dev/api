@@ -2,6 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 module CROSSMAP.Server.Handlers.PublicKeys
   ( createPublicKeyHandler
+  , deletePublicKeyHandler
   , getPublicKeysHandler
   , getPublicKeyHandler
   ) where
@@ -38,6 +39,15 @@ createPublicKeyHandler State{..} SignatureInfo{..} req = do
       , publicKeyInfoExpires = expires
       , publicKeyInfoPublicKey = pk
       }
+
+
+deletePublicKeyHandler :: State -> SignatureInfo -> Base64PublicKey -> Handler NoContent
+deletePublicKeyHandler State{..} SignatureInfo{..} (Base64PublicKey publicKey) = do
+  ensureSession signatureInfoPublicKeyInfo
+  result <- liftIO $ runUpdate pool $ deletePublicKey publicKey
+  case result of
+    Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
+    Right () -> return NoContent
 
 
 getPublicKeysHandler :: State -> SignatureInfo -> Handler [Base64PublicKey]

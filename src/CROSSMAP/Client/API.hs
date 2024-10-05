@@ -51,10 +51,13 @@ type GetPublicKeysClientM = ClientM [Base64PublicKey]
 type CreatePublicKeyClientM = CreatePublicKeyRequest -> ClientM PublicKeyInfo
 
 
-type PublicKeyClientM = GetPublicKeyClientM
+type PublicKeyClientM = GetPublicKeyClientM :<|> DeletePublicKeyClientM
 
 
 type GetPublicKeyClientM = ClientM PublicKeyInfo
+
+
+type DeletePublicKeyClientM = ClientM NoContent
 
 
 type UserClientM = GetUserClientM
@@ -93,6 +96,7 @@ type GetSessionsClientM = ClientM [Base64PublicKey]
 
 data PublicKeyClient = PublicKeyClient
   { getPublicKey :: ClientM PublicKeyInfo
+  , deletePublicKey :: ClientM NoContent
   }
 
 
@@ -147,8 +151,11 @@ getPublicKeysClient :<|> createPublicKeyClient :<|> getPublicKeyClient = publicK
 
 getPublicKeyClientByPublicKey :: Base64PublicKey -> PublicKeyClient
 getPublicKeyClientByPublicKey pk =
-  let getPublicKey' = getPublicKeyClient pk
-   in PublicKeyClient { getPublicKey = getPublicKey' }
+  let getPublicKey' :<|> deletePublicKey' = getPublicKeyClient pk
+   in PublicKeyClient
+        { getPublicKey = getPublicKey'
+        , deletePublicKey = deletePublicKey'
+        }
 
 
 getSessionsClient :: GetSessionsClientM

@@ -5,6 +5,7 @@ module CROSSMAP.Client.Command
 import Options.Applicative
 
 import CROSSMAP.Client.Command.Create
+import CROSSMAP.Client.Command.Delete
 import CROSSMAP.Client.Command.Get
 import CROSSMAP.Client.Command.Keypair
 import CROSSMAP.Client.Command.List
@@ -16,6 +17,7 @@ import CROSSMAP.Client.Command.User
 
 data Command
   = Create CreateCommand
+  | Delete DeleteCommand
   | Get GetCommand
   | Keypair KeypairCommand
   | List ListCommand
@@ -47,6 +49,8 @@ options = Options <$> hsubparser
       ( info (Get <$> getOptions) ( progDesc "Get a resource" ) )
   <> command "create"
       ( info (Create <$> createOptions) ( progDesc "Create a resource" ) )
+  <> command "delete"
+      ( info (Delete <$> deleteOptions) ( progDesc "Delete a resource" ) )
   )
 
 
@@ -68,3 +72,4 @@ runWithOptions (Options (User cmd)) = runUser cmd
 runWithOptions (Options (List cmd)) = runList cmd
 runWithOptions (Options (Get cmd)) = runGet cmd
 runWithOptions (Options (Create cmd)) = runCreate cmd
+runWithOptions (Options (Delete cmd)) = runDelete cmd

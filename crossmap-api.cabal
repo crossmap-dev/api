@@ -30,6 +30,8 @@ library
       CROSSMAP.Client.Command
       CROSSMAP.Client.Command.Create
       CROSSMAP.Client.Command.Create.User
+      CROSSMAP.Client.Command.Delete
+      CROSSMAP.Client.Command.Delete.Session
       CROSSMAP.Client.Command.Get
       CROSSMAP.Client.Command.Get.Session
       CROSSMAP.Client.Command.Get.User

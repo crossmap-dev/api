@@ -28,6 +28,7 @@ secureServer state sig
   = sessionServer state sig
   :<|> userServer state sig
   :<|> usersServer state sig
+  :<|> publicKeysServer state sig
   :<|> sessionsServer state sig
 
 
@@ -45,6 +46,12 @@ usersServer state sig
   :<|> createUserHandler state sig
   :<|> getUserByIdHandler state sig
   :<|> getUserByUsernameHandler state sig
+
+
+publicKeysServer :: State -> SignatureInfo -> Server PublicKeysAPI
+publicKeysServer state sig
+  = getPublicKeysHandler state sig
+  :<|> getPublicKeyHandler state sig
 
 
 sessionsServer :: State -> SignatureInfo -> Server SessionsAPI

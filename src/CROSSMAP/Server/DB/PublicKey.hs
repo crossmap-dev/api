@@ -3,6 +3,7 @@
 module CROSSMAP.Server.DB.PublicKey
   ( PublicKeyType(..)
   , PublicKeyInfo(..)
+  , getPublicKeys
   , insertPublicKey
   , deletePublicKey
   , lookupPublicKey
@@ -22,6 +23,17 @@ import qualified Hasql.Decoders as D
 import CROSSMAP.Base64PublicKey (Base64PublicKey(..))
 import CROSSMAP.PublicKey
 import CROSSMAP.User (UserId(..), UserPublicKey(..))
+
+
+getPublicKeys :: Transaction [PublicKey]
+getPublicKeys = statement () getPublicKeysStatement
+
+
+getPublicKeysStatement :: Statement () [PublicKey]
+getPublicKeysStatement = Statement sql encoder decoder True where
+  sql = "SELECT public_key FROM public_keys"
+  encoder = E.noParams
+  decoder = D.rowList (PublicKey <$> D.column (D.nonNullable D.bytea))
 
 
 insertPublicKey :: UTCTime -> UTCTime -> PublicKey -> Transaction ()

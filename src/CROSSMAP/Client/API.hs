@@ -2,9 +2,12 @@
 {-# LANGUAGE TypeOperators #-}
 module CROSSMAP.Client.API
   ( SessionClient(..)
+  , PublicKeyClient(..)
   , loginClient
   , getSessionClient
   , deleteSessionClient
+  , getPublicKeyClientByPublicKey
+  , getPublicKeysClient
   , getUserClient
   , getUsersClient
   , createUserClient
@@ -19,8 +22,9 @@ import Servant
 import Servant.Client
 
 import CROSSMAP.API
-import CROSSMAP.Login
 import CROSSMAP.Base64PublicKey
+import CROSSMAP.Login
+import CROSSMAP.PublicKey
 import CROSSMAP.Session
 import CROSSMAP.User
 
@@ -32,6 +36,15 @@ type SessionClientM = GetSessionClientM :<|> DeleteSessionClientM
 
 
 type SessionsClientM = GetSessionsClientM :<|> (Base64PublicKey -> SessionClientM)
+
+
+type PublicKeysClientM = GetPublicKeysClientM :<|> (Base64PublicKey -> PublicKeyClientM)
+
+
+type GetPublicKeysClientM = ClientM [Base64PublicKey]
+
+
+type PublicKeyClientM = ClientM PublicKeyInfo
 
 
 type UserClientM = GetUserClientM
@@ -68,6 +81,11 @@ type GetUserByUsernameClientM = Text -> GetUserClientM
 type GetSessionsClientM = ClientM [Base64PublicKey]
 
 
+data PublicKeyClient = PublicKeyClient
+  { getPublicKey :: ClientM PublicKeyInfo
+  }
+
+
 data SessionClient = SessionClient
   { getSession :: GetSessionClientM
   , deleteSession :: DeleteSessionClientM
@@ -81,8 +99,14 @@ loginClient = client loginAPI
 sessionClient :: SessionClientM
 userClient :: UserClientM
 usersClient :: UsersClientM
+publicKeysClient :: PublicKeysClientM
 sessionsClient :: SessionsClientM
-sessionClient :<|> userClient :<|> usersClient :<|> sessionsClient = client privateAPI
+sessionClient
+  :<|> userClient
+  :<|> usersClient
+  :<|> publicKeysClient
+  :<|> sessionsClient
+  = client privateAPI
 
 
 getSessionClient :: GetSessionClientM
@@ -103,6 +127,17 @@ getUsersClient
   :<|> getUserByIdClient
   :<|> getUserByUsernameClient
   = usersClient
+
+
+getPublicKeysClient :: GetPublicKeysClientM
+getPublicKeyClient :: Base64PublicKey -> PublicKeyClientM
+getPublicKeysClient :<|> getPublicKeyClient = publicKeysClient
+
+
+getPublicKeyClientByPublicKey :: Base64PublicKey -> PublicKeyClient
+getPublicKeyClientByPublicKey pk =
+  let getPublicKey' = getPublicKeyClient pk
+   in PublicKeyClient { getPublicKey = getPublicKey' }
 
 
 getSessionsClient :: GetSessionsClientM

@@ -19,20 +19,9 @@ import Hasql.Transaction (Transaction, statement)
 import qualified Hasql.Encoders as E
 import qualified Hasql.Decoders as D
 
-import CROSSMAP.PublicKey (Base64PublicKey(..))
+import CROSSMAP.Base64PublicKey (Base64PublicKey(..))
+import CROSSMAP.PublicKey
 import CROSSMAP.User (UserId(..), UserPublicKey(..))
-
-
-data PublicKeyType = UserKey | SessionKey deriving (Eq, Show)
-
-
-data PublicKeyInfo = PublicKeyInfo
-  { publicKeyInfoType :: PublicKeyType
-  , publicKeyInfoUser :: UserId
-  , publicKeyInfoPublicKey :: PublicKey
-  , publicKeyInfoCreated :: UTCTime
-  , publicKeyInfoExpires :: UTCTime
-  } deriving (Eq, Show)
 
 
 insertPublicKey :: UTCTime -> UTCTime -> PublicKey -> Transaction ()

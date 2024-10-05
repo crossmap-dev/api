@@ -7,7 +7,7 @@ module CROSSMAP.Server.Handlers.Sessions
 import Control.Monad.IO.Class
 import Servant
 
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.Server.Auth
 import CROSSMAP.Server.DB
 import CROSSMAP.Server.DB.Session

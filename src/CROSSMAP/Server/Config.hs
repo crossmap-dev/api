@@ -13,7 +13,7 @@ import Data.Text (pack)
 import Data.Word (Word16)
 import System.Environment (lookupEnv)
 
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 
 
 data Env = Env

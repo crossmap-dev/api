@@ -12,7 +12,7 @@ import CROSSMAP.Client.API
 import CROSSMAP.Client.State
 import CROSSMAP.Client.Util
 import CROSSMAP.Password
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.User
 
 

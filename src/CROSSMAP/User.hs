@@ -13,7 +13,7 @@ import Data.Time
 import Data.UUID
 import Servant
 
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 
 
 data CreateUserRequest = CreateUserRequest

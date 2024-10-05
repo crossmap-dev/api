@@ -18,10 +18,10 @@ import Network.HTTP.Client.TLS
 import qualified Servant.Client as SC
 
 import CROSSMAP.Auth
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.Client.API
 import CROSSMAP.Login
 import CROSSMAP.Password
-import CROSSMAP.PublicKey
 import CROSSMAP.SecretKey
 
 

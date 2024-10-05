@@ -5,7 +5,7 @@ module CROSSMAP.Server.API
 import Servant
 
 import CROSSMAP.API
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.Server.Auth
 import CROSSMAP.Server.Handlers
 import CROSSMAP.Server.State

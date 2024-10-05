@@ -20,7 +20,7 @@ import Servant.Client
 
 import CROSSMAP.API
 import CROSSMAP.Login
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.Session
 import CROSSMAP.User
 

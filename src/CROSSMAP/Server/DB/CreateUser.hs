@@ -5,7 +5,7 @@ module CROSSMAP.Server.DB.CreateUser
 import Data.Time.Clock (UTCTime)
 import Hasql.Transaction (Transaction)
 
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.DB.User
 import CROSSMAP.User

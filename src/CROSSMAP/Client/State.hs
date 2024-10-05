@@ -15,8 +15,8 @@ import Data.Text
 import System.Environment.XDG.BaseDir
 import System.Directory
 
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.Client
-import CROSSMAP.PublicKey
 import CROSSMAP.SecretKey
 
 

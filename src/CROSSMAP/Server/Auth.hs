@@ -23,7 +23,7 @@ import Servant
 import Servant.Server.Experimental.Auth
 
 import CROSSMAP.Auth
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.Server.DB
 import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.State

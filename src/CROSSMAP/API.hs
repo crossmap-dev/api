@@ -21,7 +21,7 @@ import Servant
 
 import CROSSMAP.Index
 import CROSSMAP.Login
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.Session
 import CROSSMAP.User
 

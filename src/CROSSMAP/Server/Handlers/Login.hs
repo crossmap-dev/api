@@ -11,7 +11,7 @@ import Network.Socket
 import Servant
 
 import CROSSMAP.Login
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.Server.DB
 import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.DB.Session

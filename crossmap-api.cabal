@@ -25,6 +25,7 @@ library
   exposed-modules:
       CROSSMAP.API
       CROSSMAP.Auth
+      CROSSMAP.Base64PublicKey
       CROSSMAP.Client
       CROSSMAP.Client.API
       CROSSMAP.Client.Command

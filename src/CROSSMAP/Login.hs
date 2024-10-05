@@ -10,7 +10,7 @@ import Data.Text
 import Data.Time
 import Data.UUID
 
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 
 
 data LoginRequest = LoginRequest

@@ -19,7 +19,7 @@ import Hasql.Transaction (Transaction, statement)
 import qualified Hasql.Encoders as E
 import qualified Hasql.Decoders as D
 
-import CROSSMAP.PublicKey (Base64PublicKey(..))
+import CROSSMAP.Base64PublicKey (Base64PublicKey(..))
 import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Session
 import CROSSMAP.User (UserId(..))

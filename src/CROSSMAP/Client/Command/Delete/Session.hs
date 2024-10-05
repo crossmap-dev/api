@@ -10,7 +10,7 @@ import Options.Applicative
 import CROSSMAP.Client
 import CROSSMAP.Client.API
 import CROSSMAP.Client.State
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 
 
 newtype DeleteSessionCommand = DeleteSessionCommand

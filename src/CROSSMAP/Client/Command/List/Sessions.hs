@@ -7,10 +7,10 @@ module CROSSMAP.Client.Command.List.Sessions
 import Data.Text
 import Options.Applicative
 
+import CROSSMAP.Base64PublicKey
 import CROSSMAP.Client
 import CROSSMAP.Client.API
 import CROSSMAP.Client.State
-import CROSSMAP.PublicKey
 
 
 data ListSessionsCommand = ListSessionsCommand deriving (Show)

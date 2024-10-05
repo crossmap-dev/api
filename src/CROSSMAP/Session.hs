@@ -8,7 +8,7 @@ import Data.Aeson
 import Data.Time
 import Data.UUID
 
-import CROSSMAP.PublicKey
+import CROSSMAP.Base64PublicKey
 
 
 data SessionResponse = SessionResponse

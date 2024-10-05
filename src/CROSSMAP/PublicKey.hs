@@ -1,7 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module CROSSMAP.PublicKey
-  ( PublicKeyType(..)
+  ( CreatePublicKeyRequest(..)
+  , PublicKeyType(..)
   , PublicKeyInfo(..)
   ) where
 
@@ -11,6 +12,29 @@ import Data.Time.Clock (UTCTime)
 
 import CROSSMAP.Base64PublicKey (Base64PublicKey(..))
 import CROSSMAP.User (UserId(..))
+
+
+data CreatePublicKeyRequest = CreatePublicKeyRequest
+  { createPublicKeyRequestPublicKey :: PublicKey
+  , createPublicKeyRequestExpires :: Maybe UTCTime
+  } deriving (Eq, Show)
+
+
+instance ToJSON CreatePublicKeyRequest where
+  toJSON (CreatePublicKeyRequest key Nothing) = object
+    [ "key" .= Base64PublicKey key ]
+  toJSON (CreatePublicKeyRequest key (Just expires)) = object
+    [ "key" .= Base64PublicKey key
+    , "expires" .= expires
+    ]
+
+
+instance FromJSON CreatePublicKeyRequest where
+  parseJSON = withObject "CreatePublicKeyRequest" $ \o -> do
+    base64key <- o .: "key"
+    expires <- o .:? "expires"
+    let Base64PublicKey key = base64key
+    return $ CreatePublicKeyRequest key expires
 
 
 data PublicKeyType = UserKey | SessionKey deriving (Eq, Show)

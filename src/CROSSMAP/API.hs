@@ -61,6 +61,7 @@ type SessionsAPI
 
 type PublicKeysAPI
   = ( Get '[JSON] [Base64PublicKey] )
+  :<|> ( ReqBody '[JSON] CreatePublicKeyRequest :> Post '[JSON] PublicKeyInfo )
   :<|> ( Capture "public_key" Base64PublicKey :> Get '[JSON] PublicKeyInfo )
 
 

@@ -11,6 +11,7 @@ module CROSSMAP.Client.API
   , getUserClient
   , getUsersClient
   , createUserClient
+  , createPublicKeyClient
   , getUserByIdClient
   , getUserByUsernameClient
   , getSessionsClient
@@ -38,13 +39,22 @@ type SessionClientM = GetSessionClientM :<|> DeleteSessionClientM
 type SessionsClientM = GetSessionsClientM :<|> (Base64PublicKey -> SessionClientM)
 
 
-type PublicKeysClientM = GetPublicKeysClientM :<|> (Base64PublicKey -> PublicKeyClientM)
+type PublicKeysClientM
+  = GetPublicKeysClientM
+  :<|> CreatePublicKeyClientM
+  :<|> (Base64PublicKey -> PublicKeyClientM)
 
 
 type GetPublicKeysClientM = ClientM [Base64PublicKey]
 
 
-type PublicKeyClientM = ClientM PublicKeyInfo
+type CreatePublicKeyClientM = CreatePublicKeyRequest -> ClientM PublicKeyInfo
+
+
+type PublicKeyClientM = GetPublicKeyClientM
+
+
+type GetPublicKeyClientM = ClientM PublicKeyInfo
 
 
 type UserClientM = GetUserClientM
@@ -130,8 +140,9 @@ getUsersClient
 
 
 getPublicKeysClient :: GetPublicKeysClientM
+createPublicKeyClient :: CreatePublicKeyClientM
 getPublicKeyClient :: Base64PublicKey -> PublicKeyClientM
-getPublicKeysClient :<|> getPublicKeyClient = publicKeysClient
+getPublicKeysClient :<|> createPublicKeyClient :<|> getPublicKeyClient = publicKeysClient
 
 
 getPublicKeyClientByPublicKey :: Base64PublicKey -> PublicKeyClient

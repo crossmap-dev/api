@@ -51,6 +51,7 @@ usersServer state sig
 publicKeysServer :: State -> SignatureInfo -> Server PublicKeysAPI
 publicKeysServer state sig
   = getPublicKeysHandler state sig
+  :<|> createPublicKeyHandler state sig
   :<|> getPublicKeyHandler state sig
 
 

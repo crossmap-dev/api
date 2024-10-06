@@ -39,11 +39,11 @@ type LoginAPI = "login" :> LoginEndpoint
 
 
 type PrivateAPI
-  = "session" :> SessionAPI
+  = "public_keys" :> PublicKeysAPI
+  :<|> "session" :> SessionAPI
+  :<|> "sessions" :> SessionsAPI
   :<|> "user" :> UserAPI
   :<|> "users" :> UsersAPI
-  :<|> "public_keys" :> PublicKeysAPI
-  :<|> "sessions" :> SessionsAPI
 
 
 type SecureUserAPI = AuthProtect "signature" :> LoginAPI

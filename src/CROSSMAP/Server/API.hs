@@ -25,11 +25,11 @@ loginServer = loginHandler
 
 secureServer :: State -> Server SecureSessionAPI
 secureServer state sig
-  = sessionServer state sig
+  = publicKeysServer state sig
+  :<|> sessionServer state sig
+  :<|> sessionsServer state sig
   :<|> userServer state sig
   :<|> usersServer state sig
-  :<|> publicKeysServer state sig
-  :<|> sessionsServer state sig
 
 
 sessionServer :: State -> SignatureInfo -> Server SessionAPI

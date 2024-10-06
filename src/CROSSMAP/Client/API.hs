@@ -115,11 +115,11 @@ userClient :: UserClientM
 usersClient :: UsersClientM
 publicKeysClient :: PublicKeysClientM
 sessionsClient :: SessionsClientM
-sessionClient
+publicKeysClient
+  :<|> sessionClient
+  :<|> sessionsClient
   :<|> userClient
   :<|> usersClient
-  :<|> publicKeysClient
-  :<|> sessionsClient
   = client privateAPI
 
 

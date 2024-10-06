@@ -52,6 +52,7 @@ library
       CROSSMAP.Index
       CROSSMAP.Login
       CROSSMAP.Password
+      CROSSMAP.Policy
       CROSSMAP.PublicKey
       CROSSMAP.SecretKey
       CROSSMAP.Server.API

@@ -22,23 +22,7 @@ import Hasql.Transaction (Transaction, statement)
 import qualified Hasql.Encoders as E
 import qualified Hasql.Decoders as D
 
-
-newtype PolicyId = PolicyId { unPolicyId :: UUID } deriving (Eq, Show)
-
-
-data Policy = Policy
-  { policyId :: PolicyId
-  , policyNames :: [Text]
-  , policyRules :: [PolicyRule]
-  } deriving (Eq, Show)
-
-
-data PolicyRule = PolicyRule
-  { policyRuleId :: UUID
-  , policyRuleAllowRead :: Bool
-  , policyRuleAllowWrite :: Bool
-  , policyRuleResource :: Text
-  } deriving (Eq, Show)
+import CROSSMAP.Policy
 
 
 getPolicies :: Transaction [Policy]

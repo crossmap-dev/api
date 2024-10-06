@@ -6,6 +6,9 @@ module CROSSMAP.Client.API
   , loginClient
   , getSessionClient
   , deleteSessionClient
+  , getPoliciesClient
+  , createPolicyClient
+  , getPolicyClientById
   , getPublicKeyClientByPublicKey
   , getPublicKeysClient
   , getUserClient
@@ -25,6 +28,7 @@ import Servant.Client
 import CROSSMAP.API
 import CROSSMAP.Base64PublicKey
 import CROSSMAP.Login
+import CROSSMAP.Policy
 import CROSSMAP.PublicKey
 import CROSSMAP.Session
 import CROSSMAP.User
@@ -37,6 +41,27 @@ type SessionClientM = GetSessionClientM :<|> DeleteSessionClientM
 
 
 type SessionsClientM = GetSessionsClientM :<|> (Base64PublicKey -> SessionClientM)
+
+
+type PoliciesClientM
+  = GetPoliciesClientM
+  :<|> CreatePolicyClientM
+  :<|> (PolicyId -> PolicyClientM)
+
+
+type PolicyClientM = GetPolicyClientM :<|> DeletePolicyClientM
+
+
+type GetPoliciesClientM = ClientM [PolicyId]
+
+
+type CreatePolicyClientM = CreatePolicyRequest -> ClientM Policy
+
+
+type GetPolicyClientM = ClientM Policy
+
+
+type DeletePolicyClientM = ClientM NoContent
 
 
 type PublicKeysClientM
@@ -94,6 +119,12 @@ type GetUserByUsernameClientM = Text -> GetUserClientM
 type GetSessionsClientM = ClientM [Base64PublicKey]
 
 
+data PolicyClient = PolicyClient
+  { getPolicy :: ClientM Policy
+  , deletePolicy :: ClientM NoContent
+  }
+
+
 data PublicKeyClient = PublicKeyClient
   { getPublicKey :: ClientM PublicKeyInfo
   , deletePublicKey :: ClientM NoContent
@@ -115,7 +146,9 @@ userClient :: UserClientM
 usersClient :: UsersClientM
 publicKeysClient :: PublicKeysClientM
 sessionsClient :: SessionsClientM
-publicKeysClient
+policiesClient :: PoliciesClientM
+policiesClient
+  :<|> publicKeysClient
   :<|> sessionClient
   :<|> sessionsClient
   :<|> userClient
@@ -130,6 +163,18 @@ getSessionClient :<|> deleteSessionClient = sessionClient
 
 getUserClient :: GetUserClientM
 getUserClient = userClient
+
+
+getPoliciesClient :: GetPoliciesClientM
+createPolicyClient :: CreatePolicyClientM
+getPolicyClient :: PolicyId -> PolicyClientM
+getPoliciesClient :<|> createPolicyClient :<|> getPolicyClient = policiesClient
+
+
+getPolicyClientById :: PolicyId -> PolicyClient
+getPolicyClientById pid =
+  let getPolicy' :<|> deletePolicy' = getPolicyClient pid
+   in PolicyClient { getPolicy = getPolicy', deletePolicy = deletePolicy' }
 
 
 getUsersClient :: GetUsersClientM

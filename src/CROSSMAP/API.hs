@@ -6,10 +6,12 @@ module CROSSMAP.API
   , PrivateAPI
   , SecureUserAPI
   , SecureSessionAPI
-  , SessionAPI
-  , SessionsAPI
+  , PolicyAPI
+  , PoliciesAPI
   , PublicKeyAPI
   , PublicKeysAPI
+  , SessionAPI
+  , SessionsAPI
   , UserAPI
   , UsersAPI
   , api
@@ -24,6 +26,7 @@ import Servant
 import CROSSMAP.Base64PublicKey
 import CROSSMAP.Index
 import CROSSMAP.Login
+import CROSSMAP.Policy
 import CROSSMAP.PublicKey
 import CROSSMAP.Session
 import CROSSMAP.User
@@ -39,7 +42,8 @@ type LoginAPI = "login" :> LoginEndpoint
 
 
 type PrivateAPI
-  = "public_keys" :> PublicKeysAPI
+  = "policies" :> PoliciesAPI
+  :<|> "public_keys" :> PublicKeysAPI
   :<|> "session" :> SessionAPI
   :<|> "sessions" :> SessionsAPI
   :<|> "user" :> UserAPI
@@ -52,12 +56,13 @@ type SecureUserAPI = AuthProtect "signature" :> LoginAPI
 type SecureSessionAPI = AuthProtect "signature" :> PrivateAPI
 
 
-type SessionAPI = GetSessionEndpoint :<|> DeleteSessionEndpoint
+type PolicyAPI = GetPolicyEndpoint :<|> DeletePolicyEndpoint
 
 
-type SessionsAPI
-  = ( Get '[JSON] [Base64PublicKey] )
-  :<|> ( Capture "session" Base64PublicKey :> SessionAPI )
+type PoliciesAPI
+  = ( Get '[JSON] [PolicyId] )
+  :<|> ( ReqBody '[JSON] CreatePolicyRequest :> Post '[JSON] Policy )
+  :<|> ( Capture "policy" PolicyId :> PolicyAPI )
 
 
 type PublicKeysAPI
@@ -69,6 +74,14 @@ type PublicKeysAPI
 type PublicKeyAPI
   = ( Get '[JSON] PublicKeyInfo )
   :<|> ( Delete '[JSON] NoContent )
+
+
+type SessionAPI = GetSessionEndpoint :<|> DeleteSessionEndpoint
+
+
+type SessionsAPI
+  = ( Get '[JSON] [Base64PublicKey] )
+  :<|> ( Capture "session" Base64PublicKey :> SessionAPI )
 
 
 type UserAPI = GetUserEndpoint
@@ -85,6 +98,12 @@ type IndexEndpoint = Get '[JSON] IndexResponse
 
 
 type LoginEndpoint = ReqBody '[JSON] LoginRequest :> Post '[JSON] LoginResponse
+
+
+type GetPolicyEndpoint = Get '[JSON] Policy
+
+
+type DeletePolicyEndpoint = Delete '[JSON] NoContent
 
 
 type GetSessionEndpoint = Get '[JSON] SessionResponse

@@ -6,8 +6,10 @@ module CROSSMAP.Server.DB.Policy
   , getPolicyById
   , getPolicyByName
   , getPolicies
+  , getPolicyIds
   , insertPolicy
   , updatePolicy
+  , deletePolicy
   , matchPolicyRuleStatement
   ) where
 
@@ -50,15 +52,27 @@ getPoliciesStatement = Statement sql encoder decoder True
       <*> D.column (D.nullable D.text)
 
 
+getPolicyIds :: Transaction [PolicyId]
+getPolicyIds = statement () getPolicyIdsStatement
+
+
+getPolicyIdsStatement :: Statement () [PolicyId]
+getPolicyIdsStatement = Statement sql encoder decoder True
+  where
+    sql = "SELECT uuid FROM policies"
+    encoder = E.noParams
+    decoder = D.rowList $ PolicyId <$> D.column (D.nonNullable D.uuid)
+
+
 processPolicies ::
   [(UUID, Maybe Text, Maybe UUID, Maybe Bool, Maybe Bool, Maybe Text)] -> [Policy]
 processPolicies rows =
-  map createPolicy . groupBy ((==) `on` getPolicyUuid) $ rows
+  map createPolicy' . groupBy ((==) `on` getPolicyUuid) $ rows
   where
     getGroupUuid [] = nil
     getGroupUuid ((uuid, _, _, _, _, _) : _) = uuid
     getPolicyUuid (uuid, _, _, _, _, _) = uuid
-    createPolicy group =
+    createPolicy' group =
       let names = [name | (_, Just name, _, _, _, _) <- group]
           rules = [PolicyRule rUuid read' write resource
                   | (_, _, Just rUuid, Just read', Just write, Just resource) <- group]
@@ -140,25 +154,40 @@ insertPolicy policy = do
 
 updatePolicy :: Policy -> Transaction ()
 updatePolicy policy = do
-  statement policy deletePolicyNamesStatement
-  statement policy deletePolicyRulesStatement
+  statement (policyId policy) deletePolicyNamesStatement
+  statement (policyId policy) deletePolicyRulesStatement
   mapM_ (insertPolicyRule $ policyId policy) (policyRules policy)
   mapM_ (insertPolicyName $ policyId policy) (policyNames policy)
 
 
-deletePolicyNamesStatement :: Statement Policy ()
-deletePolicyNamesStatement = Statement sql encoder decoder True
+deletePolicy :: PolicyId -> Transaction ()
+deletePolicy pid = do
+  statement pid deletePolicyNamesStatement
+  statement pid deletePolicyRulesStatement
+  statement pid deletePolicyStatement
+
+
+deletePolicyStatement :: Statement PolicyId ()
+deletePolicyStatement = Statement sql encoder decoder True
   where
-    sql = "DELETE FROM policies_names WHERE policy_uuid = $1"
-    encoder = unPolicyId . policyId >$< E.param (E.nonNullable E.uuid)
+    sql = "DELETE FROM policies WHERE uuid = $1"
+    encoder = unPolicyId >$< E.param (E.nonNullable E.uuid)
     decoder = D.noResult
 
 
-deletePolicyRulesStatement :: Statement Policy ()
+deletePolicyNamesStatement :: Statement PolicyId ()
+deletePolicyNamesStatement = Statement sql encoder decoder True
+  where
+    sql = "DELETE FROM policies_names WHERE policy_uuid = $1"
+    encoder = unPolicyId >$< E.param (E.nonNullable E.uuid)
+    decoder = D.noResult
+
+
+deletePolicyRulesStatement :: Statement PolicyId ()
 deletePolicyRulesStatement = Statement sql encoder decoder True
   where
     sql = "DELETE FROM policies_rules WHERE policy_uuid = $1"
-    encoder = unPolicyId . policyId >$< E.param (E.nonNullable E.uuid)
+    encoder = unPolicyId >$< E.param (E.nonNullable E.uuid)
     decoder = D.noResult
 
 

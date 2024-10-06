@@ -6,6 +6,7 @@ import Servant
 
 import CROSSMAP.API
 import CROSSMAP.Base64PublicKey
+import CROSSMAP.Policy
 import CROSSMAP.Server.Auth
 import CROSSMAP.Server.Handlers
 import CROSSMAP.Server.State
@@ -25,11 +26,25 @@ loginServer = loginHandler
 
 secureServer :: State -> Server SecureSessionAPI
 secureServer state sig
-  = publicKeysServer state sig
+  = policiesServer state sig
+  :<|> publicKeysServer state sig
   :<|> sessionServer state sig
   :<|> sessionsServer state sig
   :<|> userServer state sig
   :<|> usersServer state sig
+
+
+policiesServer :: State -> SignatureInfo -> Server PoliciesAPI
+policiesServer state sig
+  = getPoliciesHandler state sig
+  :<|> createPolicyHandler state sig
+  :<|> policyByIdServer state sig
+
+
+policyByIdServer :: State -> SignatureInfo -> PolicyId -> Server PolicyAPI
+policyByIdServer state sig pk
+  = getPolicyHandler state sig pk
+  :<|> deletePolicyHandler state sig pk
 
 
 sessionServer :: State -> SignatureInfo -> Server SessionAPI

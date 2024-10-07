@@ -8,7 +8,9 @@ import Crypto.Sign.Ed25519 (PublicKey)
 import Data.Time.Clock (addUTCTime, getCurrentTime)
 import Data.UUID.V4 (nextRandom)
 
+import CROSSMAP.Policy
 import CROSSMAP.Server.DB
+import CROSSMAP.Server.DB.Policy
 import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.DB.User
 import CROSSMAP.Server.State
@@ -38,6 +40,18 @@ serverInit State{..} publicKey = do
       case result3 of
         Left err -> error $ show err
         Right _ -> return ()
+    Right _ -> return ()
+
+  result4 <- runQuery pool $ getPolicyByName "admin"
+  case result4 of
+    Left err -> error $ show err
+    Right Nothing -> do
+      let allowAll = CreatePolicyRule True True "*"
+      policy <- createPolicy $ CreatePolicyRequest "admin" [ allowAll ]
+      result5 <- runUpdate pool $ insertPolicy policy
+      case result5 of
+        Left err -> error $ show err
+        Right () -> return ()
     Right _ -> return ()
 
   putStrLn "Server initialized"

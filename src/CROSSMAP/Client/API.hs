@@ -3,6 +3,7 @@
 module CROSSMAP.Client.API
   ( SessionClient(..)
   , PublicKeyClient(..)
+  , PolicyClient(..)
   , loginClient
   , getSessionClient
   , deleteSessionClient

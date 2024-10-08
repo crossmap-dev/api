@@ -24,14 +24,17 @@ import Servant.Server.Experimental.Auth
 
 import CROSSMAP.Auth
 import CROSSMAP.Base64PublicKey
+import CROSSMAP.Policy
+import CROSSMAP.PublicKey
 import CROSSMAP.Server.DB
-import CROSSMAP.Server.DB.PublicKey
+import CROSSMAP.Server.DB.Auth
 import CROSSMAP.Server.State
 
 
 data SignatureInfo = SignatureInfo
   { signatureInfoHost :: Text
   , signatureInfoRequestId :: UUID
+  , signatureInfoPolicyRules :: [PolicyRule]
   , signatureInfoPublicKeyInfo :: PublicKeyInfo
   , signatureInfoSocketAddr :: SockAddr
   } deriving (Eq, Show)
@@ -78,17 +81,19 @@ checkAuth State{pool=pool} AuthHeaders{..} req = do
         (encodeUtf8 signatureInfoHost)
         (rawPathInfo req)
         (rawQueryString req)
+      resource = decodeUtf8 $ rawPathInfo req
   ensureValidSignature authHeader stringToSign' signatureInfoPublicKey
-  result <- liftIO $ runQuery pool $ lookupPublicKey signatureInfoPublicKey
+  result <- liftIO $ runQuery pool $ authQuery signatureInfoPublicKey resource True
   case result of
-    Right (Just publicKeyInfo) ->
+    Right (Just publicKeyInfo, policyRules) ->
       return $ SignatureInfo
         { signatureInfoHost = signatureInfoHost
         , signatureInfoRequestId = signatureInfoRequestId
+        , signatureInfoPolicyRules = policyRules
         , signatureInfoPublicKeyInfo = publicKeyInfo
         , signatureInfoSocketAddr = remoteHost req
         }
-    Right Nothing -> throwError $ err401 { errBody = "Public key not found" }
+    Right (Nothing, _) -> throwError $ err401 { errBody = "Public key not found" }
     Left _ -> throwError $ err500 { errBody = "Database error" }
 
 

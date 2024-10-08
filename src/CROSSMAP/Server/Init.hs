@@ -46,7 +46,7 @@ serverInit State{..} publicKey = do
   case result4 of
     Left err -> error $ show err
     Right Nothing -> do
-      let allowAll = CreatePolicyRule True True "*"
+      let allowAll = CreatePolicyRule True True "**"
       policy <- createPolicy $ CreatePolicyRequest "admin" [ allowAll ]
       result5 <- runUpdate pool $ insertPolicy policy
       case result5 of

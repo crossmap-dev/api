@@ -7,8 +7,10 @@ module CROSSMAP.Client
   ) where
 
 import Data.Base64.Types
+import Data.ByteString as BS
 import Data.ByteString.Base64.URL
-import Data.Text
+import Data.ByteString.Char8 as BC
+import Data.Text as T
 import Data.Text.Encoding
 import Data.UUID
 import Data.UUID.V4
@@ -45,7 +47,7 @@ data Client = Client
 
 newSession :: Text -> Text -> Text -> IO Client
 newSession url username password = do
-  url' <- SC.parseBaseUrl $ unpack url
+  url' <- SC.parseBaseUrl $ T.unpack url
   (userPK, userSK) <- keyDerivation username password
   (sessionPK, sessionSK) <- createKeypair
   let uah req = signRequest userPK userSK req
@@ -75,7 +77,7 @@ newSession url username password = do
 
 loadSession :: Text -> Text -> Text -> Text -> Text -> Text -> IO Client
 loadSession url username userPK userSK sessionPK sessionSK = do
-  url' <- SC.parseBaseUrl $ unpack url
+  url' <- SC.parseBaseUrl $ T.unpack url
   userPK' <- maybe (fail "Invalid user public key") return $ publicKeyFromText userPK
   userSK' <- maybe (fail "Invalid user secret key") return $ secretKeyFromText userSK
   sessionPK' <- maybe (fail "Invalid session public key") return $ publicKeyFromText sessionPK
@@ -122,6 +124,17 @@ authStringToSign :: Request -> UUID -> Text
 authStringToSign req reqId
   = decodeUtf8 $ CROSSMAP.Auth.stringToSign reqId m h p q
   where m = method req
-        h = host req
         p = path req
         q = queryString req
+        h = hostHeader req
+
+
+hostHeader :: Request -> ByteString
+hostHeader req =
+  if secure req
+  then if port req == 443
+       then host req
+       else host req <> ":" <> BC.pack (show $ port req)
+  else if port req == 80
+       then host req
+       else host req <> ":" <> BC.pack (show $ port req)

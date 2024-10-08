@@ -32,23 +32,27 @@ authQuery publicKey resource isWrite =
 authQueryStatement :: Statement (PublicKey, Text, Bool) [AuthQueryRow]
 authQueryStatement = Statement sql encoder decoder True where
   sql = "SELECT \
-        \  upkr.key_type, \
-        \  upkr.public_key, \
-        \  upkr.created_at, \
-        \  upkr.expires_at, \
-        \  upkr.user_uuid, \
-        \  pr.policy_uuid, \
-        \  pr.rule_uuid, \
-        \  pr.read, \
-        \  pr.write, \
-        \  pr.resource \
-        \FROM user_public_key_resolution upkr \
-        \JOIN user_policy_resolution upr ON upkr.user_uuid = upr.user_uuid \
-        \JOIN LATERAL find_matching_policies($2, $3, ARRAY_AGG(upr.policy_uuid)) mp ON true \
-        \JOIN policies_rules pr \
-        \  ON mp.policy_uuid = pr.policy_uuid \
-        \  AND mp.rule_uuid = pr.rule_uuid \
-        \WHERE upkr.public_key = $1"
+      \  upkr.key_type, \
+      \  upkr.public_key, \
+      \  upkr.created_at, \
+      \  upkr.expires_at, \
+      \  upkr.user_uuid, \
+      \  pr.policy_uuid, \
+      \  pr.rule_uuid, \
+      \  pr.read, \
+      \  pr.write, \
+      \  pr.resource \
+      \FROM user_public_key_resolution upkr \
+      \CROSS JOIN LATERAL ( \
+      \  SELECT ARRAY_AGG(DISTINCT policy_uuid) AS policy_uuids \
+      \  FROM user_policy_resolution \
+      \  WHERE user_uuid = upkr.user_uuid \
+      \) AS user_policies \
+      \JOIN LATERAL find_matching_policies($2, $3, user_policies.policy_uuids) mpr ON true \
+      \JOIN policies_rules pr \
+      \  ON pr.policy_uuid = mpr.policy_uuid \
+      \  AND pr.rule_uuid = mpr.rule_uuid \
+      \WHERE upkr.public_key = $1"
   pkParam (PublicKey pk, _, _) = pk
   resourceParam (_, resource, _) = resource
   isWriteParam (_, _, isWrite) = isWrite

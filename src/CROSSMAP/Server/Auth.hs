@@ -94,7 +94,9 @@ checkAuth State{pool=pool} AuthHeaders{..} req = do
         , signatureInfoSocketAddr = remoteHost req
         }
     Right (Nothing, _) -> throwError $ err401 { errBody = "Public key not found" }
-    Left _ -> throwError $ err500 { errBody = "Database error" }
+    Left err -> do
+      liftIO $ print err
+      throwError $ err500 { errBody = "Internal server error" }
 
 
 ensureHeader :: Request -> HeaderName -> Handler ByteString

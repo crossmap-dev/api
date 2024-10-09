@@ -13,6 +13,7 @@ import CROSSMAP.Server.DB
 import CROSSMAP.Server.DB.Policy
 import CROSSMAP.Server.DB.PublicKey
 import CROSSMAP.Server.DB.User
+import CROSSMAP.Server.DB.UserPolicy
 import CROSSMAP.Server.State
 import CROSSMAP.User
 
@@ -43,7 +44,7 @@ serverInit State{..} publicKey = do
     Right _ -> return ()
 
   result4 <- runQuery pool $ getPolicyByName "admin"
-  case result4 of
+  adminPolicyId <- case result4 of
     Left err -> error $ show err
     Right Nothing -> do
       let allowAll = CreatePolicyRule True True "**"
@@ -51,7 +52,17 @@ serverInit State{..} publicKey = do
       result5 <- runUpdate pool $ insertPolicy policy
       case result5 of
         Left err -> error $ show err
-        Right () -> return ()
+        Right () -> return $ policyId policy
+    Right (Just policy) -> return $ policyId policy
+
+  result6 <- runQuery pool $ getUserPolicy adminId adminPolicyId
+  case result6 of
+    Left err -> error $ show err
+    Right Nothing -> do
+      result7 <- runUpdate pool $ insertUserPolicy adminId adminPolicyId
+      case result7 of
+        Left err -> error $ show err
+        Right _ -> return ()
     Right _ -> return ()
 
   putStrLn "Server initialized"

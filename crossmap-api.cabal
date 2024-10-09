@@ -70,6 +70,7 @@ library
       CROSSMAP.Server.DB.PublicKey
       CROSSMAP.Server.DB.Session
       CROSSMAP.Server.DB.User
+      CROSSMAP.Server.DB.UserPolicy
       CROSSMAP.Server.Handlers
       CROSSMAP.Server.Handlers.Login
       CROSSMAP.Server.Handlers.Policies

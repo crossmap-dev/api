@@ -16,8 +16,8 @@ import CROSSMAP.User (UserId(..))
 
 
 getUsersHandler :: State -> SignatureInfo -> Handler [UserId]
-getUsersHandler State{..} SignatureInfo{..} = do
-  ensureSession signatureInfoPublicKeyInfo
+getUsersHandler state@State{..} signatureInfo = do
+  _ <- authorize state signatureInfo
   result <- liftIO $ runQuery pool $ getUsers
   case result of
     Right users -> return users

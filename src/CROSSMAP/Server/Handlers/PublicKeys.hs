@@ -22,8 +22,8 @@ import CROSSMAP.Server.State
 
 createPublicKeyHandler ::
   State -> SignatureInfo -> CreatePublicKeyRequest -> Handler PublicKeyInfo
-createPublicKeyHandler State{..} SignatureInfo{..} req = do
-  ensureSession signatureInfoPublicKeyInfo
+createPublicKeyHandler state@State{..} signatureInfo@SignatureInfo{..} req = do
+  _ <- authorize state signatureInfo
   created <- liftIO getCurrentTime
   let pk = createPublicKeyRequestPublicKey req
   let defaultExpires = addUTCTime (60 * 60 * 24 * 30) created
@@ -42,8 +42,8 @@ createPublicKeyHandler State{..} SignatureInfo{..} req = do
 
 
 deletePublicKeyHandler :: State -> SignatureInfo -> Base64PublicKey -> Handler NoContent
-deletePublicKeyHandler State{..} SignatureInfo{..} (Base64PublicKey publicKey) = do
-  ensureSession signatureInfoPublicKeyInfo
+deletePublicKeyHandler state@State{..} signatureInfo (Base64PublicKey publicKey) = do
+  _ <- authorize state signatureInfo
   result <- liftIO $ runUpdate pool $ deletePublicKey publicKey
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
@@ -51,8 +51,8 @@ deletePublicKeyHandler State{..} SignatureInfo{..} (Base64PublicKey publicKey) =
 
 
 getPublicKeysHandler :: State -> SignatureInfo -> Handler [Base64PublicKey]
-getPublicKeysHandler State{..} SignatureInfo{..} = do
-  ensureSession signatureInfoPublicKeyInfo
+getPublicKeysHandler state@State{..} signatureInfo = do
+  _ <- authorize state signatureInfo
   result <- liftIO $ runQuery pool $ getPublicKeys
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
@@ -60,8 +60,8 @@ getPublicKeysHandler State{..} SignatureInfo{..} = do
 
 
 getPublicKeyHandler :: State -> SignatureInfo -> Base64PublicKey -> Handler PublicKeyInfo
-getPublicKeyHandler State{..} SignatureInfo{..} (Base64PublicKey publicKey) = do
-  ensureSession signatureInfoPublicKeyInfo
+getPublicKeyHandler state@State{..} signatureInfo (Base64PublicKey publicKey) = do
+  _ <- authorize state signatureInfo
   result <- liftIO $ runQuery pool $ lookupPublicKey publicKey
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }

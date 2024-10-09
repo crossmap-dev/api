@@ -16,8 +16,8 @@ import CROSSMAP.Server.State
 
 
 getSessionsHandler :: State -> SignatureInfo -> Handler [Base64PublicKey]
-getSessionsHandler State{..} SignatureInfo{..} = do
-  ensureSession signatureInfoPublicKeyInfo
+getSessionsHandler state@State{..} signatureInfo = do
+  _ <- authorize state signatureInfo
   result <- liftIO $ runQuery pool $ getSessions
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }

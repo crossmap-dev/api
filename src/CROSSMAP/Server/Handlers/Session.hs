@@ -38,8 +38,8 @@ getSessionHandler _ SignatureInfo{..} = do
 
 getSessionByPublicKeyHandler ::
   State -> SignatureInfo -> Base64PublicKey -> Handler SessionResponse
-getSessionByPublicKeyHandler State{..} SignatureInfo{..} (Base64PublicKey pk) = do
-  ensureSession signatureInfoPublicKeyInfo
+getSessionByPublicKeyHandler state@State{..} signatureInfo (Base64PublicKey pk) = do
+  _ <- authorize state signatureInfo
   result <- liftIO $ runQuery pool $ getSession pk
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
@@ -48,8 +48,8 @@ getSessionByPublicKeyHandler State{..} SignatureInfo{..} (Base64PublicKey pk) = 
 
 
 deleteSessionHandler :: State -> SignatureInfo -> Handler NoContent
-deleteSessionHandler State{..} SignatureInfo{..} = do
-  ensureSession signatureInfoPublicKeyInfo
+deleteSessionHandler state@State{..} signatureInfo@SignatureInfo{..} = do
+  _ <- authorize state signatureInfo
   let PublicKeyInfo{..} = signatureInfoPublicKeyInfo
   result <- liftIO $ runUpdate pool $ deleteSession publicKeyInfoUser publicKeyInfoPublicKey
   case result of
@@ -59,8 +59,8 @@ deleteSessionHandler State{..} SignatureInfo{..} = do
 
 deleteSessionByPublicKeyHandler ::
   State -> SignatureInfo -> Base64PublicKey -> Handler NoContent
-deleteSessionByPublicKeyHandler State{..} SignatureInfo{..} (Base64PublicKey pk) = do
-  ensureSession signatureInfoPublicKeyInfo
+deleteSessionByPublicKeyHandler state@State{..} signatureInfo (Base64PublicKey pk) = do
+  _ <- authorize state signatureInfo
   result <- liftIO $ runUpdate pool $ deleteSessionByPublicKey pk
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }

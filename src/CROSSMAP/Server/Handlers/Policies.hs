@@ -19,8 +19,8 @@ import CROSSMAP.Server.State
 
 
 createPolicyHandler :: State -> SignatureInfo -> CreatePolicyRequest -> Handler Policy
-createPolicyHandler State{..} SignatureInfo{..} req = do
-  ensureSession signatureInfoPublicKeyInfo
+createPolicyHandler state@State{..} signatureInfo req = do
+  _ <- authorize state signatureInfo
   policy <- liftIO $ createPolicy req
   result <- liftIO $ runUpdate pool $ insertPolicy policy
   case result of
@@ -29,8 +29,8 @@ createPolicyHandler State{..} SignatureInfo{..} req = do
 
 
 deletePolicyHandler :: State -> SignatureInfo -> PolicyId -> Handler NoContent
-deletePolicyHandler State{..} SignatureInfo{..} policyId = do
-  ensureSession signatureInfoPublicKeyInfo
+deletePolicyHandler state@State{..} signatureInfo policyId = do
+  _ <- authorize state signatureInfo
   result <- liftIO $ runUpdate pool $ deletePolicy policyId
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
@@ -38,8 +38,8 @@ deletePolicyHandler State{..} SignatureInfo{..} policyId = do
 
 
 getPolicyHandler :: State -> SignatureInfo -> PolicyId -> Handler Policy
-getPolicyHandler State{..} SignatureInfo{..} policyId = do
-  ensureSession signatureInfoPublicKeyInfo
+getPolicyHandler state@State{..} signatureInfo policyId = do
+  _ <- authorize state signatureInfo
   result <- liftIO $ runQuery pool $ getPolicyById policyId
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
@@ -48,8 +48,8 @@ getPolicyHandler State{..} SignatureInfo{..} policyId = do
 
 
 getPoliciesHandler :: State -> SignatureInfo -> Handler [PolicyId]
-getPoliciesHandler State{..} SignatureInfo{..} = do
-  ensureSession signatureInfoPublicKeyInfo
+getPoliciesHandler state@State{..} signatureInfo = do
+  _ <- authorize state signatureInfo
   result <- liftIO $ runQuery pool $ getPolicyIds
   case result of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }

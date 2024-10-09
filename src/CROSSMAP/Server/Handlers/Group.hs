@@ -43,13 +43,13 @@ getGroupsHandler state@State{..} signatureInfo = do
 createGroupHandler :: State -> SignatureInfo -> CreateGroupRequest -> Handler Group
 createGroupHandler state@State{..} signatureInfo CreateGroupRequest{..} = do
   _ <- authorize state signatureInfo
-  result0 <- liftIO $ runUpdate pool $ resolveUsers createGroupUsers
+  result0 <- liftIO $ runQuery pool $ resolveUsers createGroupUsers
   case result0 of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
     Right (Left err) -> throwError err400 { errBody = fromStrict $ encodeUtf8 err }
     Right (Right users) -> do
       group <- liftIO $ createGroup createGroupNames users
-      result1 <- liftIO $ runQuery pool $ insertGroup group
+      result1 <- liftIO $ runUpdate pool $ insertGroup group
       case result1 of
         Right () -> return group
         Left err ->

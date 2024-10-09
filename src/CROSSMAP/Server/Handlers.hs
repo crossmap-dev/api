@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CROSSMAP.Server.Handlers
   ( indexHandler
+  , module CROSSMAP.Server.Handlers.Group
   , module CROSSMAP.Server.Handlers.Login
   , module CROSSMAP.Server.Handlers.Policies
   , module CROSSMAP.Server.Handlers.PublicKeys
@@ -13,6 +14,7 @@ module CROSSMAP.Server.Handlers
 import Servant
 
 import CROSSMAP.Index (IndexResponse(IndexResponse))
+import CROSSMAP.Server.Handlers.Group
 import CROSSMAP.Server.Handlers.Login
 import CROSSMAP.Server.Handlers.Policies
 import CROSSMAP.Server.Handlers.PublicKeys

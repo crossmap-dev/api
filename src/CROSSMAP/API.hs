@@ -1,29 +1,14 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 module CROSSMAP.API
-  ( API
-  , PublicAPI
-  , PrivateAPI
-  , SecureUserAPI
-  , SecureSessionAPI
-  , PolicyAPI
-  , PoliciesAPI
-  , PublicKeyAPI
-  , PublicKeysAPI
-  , SessionAPI
-  , SessionsAPI
-  , UserAPI
-  , UsersAPI
-  , api
-  , loginAPI
-  , publicAPI
-  , privateAPI
+  ( module CROSSMAP.API
   ) where
 
 import Data.Text (Text)
 import Servant
 
 import CROSSMAP.Base64PublicKey
+import CROSSMAP.Group
 import CROSSMAP.Index
 import CROSSMAP.Login
 import CROSSMAP.Policy
@@ -42,7 +27,8 @@ type LoginAPI = "login" :> LoginEndpoint
 
 
 type PrivateAPI
-  = "policies" :> PoliciesAPI
+  = "groups" :> GroupsAPI
+  :<|> "policies" :> PoliciesAPI
   :<|> "public-keys" :> PublicKeysAPI
   :<|> "session" :> SessionAPI
   :<|> "sessions" :> SessionsAPI
@@ -54,6 +40,15 @@ type SecureUserAPI = AuthProtect "signature" :> LoginAPI
 
 
 type SecureSessionAPI = AuthProtect "signature" :> PrivateAPI
+
+
+type GroupAPI = GetGroupEndpoint :<|> DeleteGroupEndpoint
+
+
+type GroupsAPI
+  = ( Get '[JSON] [GroupId] )
+  :<|> ( ReqBody '[JSON] CreateGroupRequest :> Post '[JSON] Group )
+  :<|> ( Capture "group" GroupId :> GroupAPI )
 
 
 type PolicyAPI = GetPolicyEndpoint :<|> DeletePolicyEndpoint
@@ -98,6 +93,12 @@ type IndexEndpoint = Get '[JSON] IndexResponse
 
 
 type LoginEndpoint = ReqBody '[JSON] LoginRequest :> Post '[JSON] LoginResponse
+
+
+type GetGroupEndpoint = Get '[JSON] Group
+
+
+type DeleteGroupEndpoint = Delete '[JSON] NoContent
 
 
 type GetPolicyEndpoint = Get '[JSON] Policy

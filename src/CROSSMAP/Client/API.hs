@@ -1,12 +1,16 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 module CROSSMAP.Client.API
-  ( SessionClient(..)
+  ( GroupClient(..)
+  , SessionClient(..)
   , PublicKeyClient(..)
   , PolicyClient(..)
   , loginClient
   , getSessionClient
   , deleteSessionClient
+  , getGroupsClient
+  , createGroupClient
+  , getGroupClientById
   , getPoliciesClient
   , createPolicyClient
   , getPolicyClientById
@@ -28,6 +32,7 @@ import Servant.Client
 
 import CROSSMAP.API
 import CROSSMAP.Base64PublicKey
+import CROSSMAP.Group
 import CROSSMAP.Login
 import CROSSMAP.Policy
 import CROSSMAP.PublicKey
@@ -42,6 +47,27 @@ type SessionClientM = GetSessionClientM :<|> DeleteSessionClientM
 
 
 type SessionsClientM = GetSessionsClientM :<|> (Base64PublicKey -> SessionClientM)
+
+
+type GroupsClientM
+  = GetGroupsClientM
+  :<|> CreateGroupClientM
+  :<|> (GroupId -> GroupClientM)
+
+
+type GroupClientM = GetGroupClientM :<|> DeleteGroupClientM
+
+
+type GetGroupsClientM = ClientM [GroupId]
+
+
+type CreateGroupClientM = CreateGroupRequest -> ClientM Group
+
+
+type GetGroupClientM = ClientM Group
+
+
+type DeleteGroupClientM = ClientM NoContent
 
 
 type PoliciesClientM
@@ -120,6 +146,12 @@ type GetUserByUsernameClientM = Text -> GetUserClientM
 type GetSessionsClientM = ClientM [Base64PublicKey]
 
 
+data GroupClient = GroupClient
+  { getGroup :: ClientM Group
+  , deleteGroup :: ClientM NoContent
+  }
+
+
 data PolicyClient = PolicyClient
   { getPolicy :: ClientM Policy
   , deletePolicy :: ClientM NoContent
@@ -148,7 +180,9 @@ usersClient :: UsersClientM
 publicKeysClient :: PublicKeysClientM
 sessionsClient :: SessionsClientM
 policiesClient :: PoliciesClientM
-policiesClient
+groupsClient :: GroupsClientM
+groupsClient
+  :<|> policiesClient
   :<|> publicKeysClient
   :<|> sessionClient
   :<|> sessionsClient
@@ -164,6 +198,18 @@ getSessionClient :<|> deleteSessionClient = sessionClient
 
 getUserClient :: GetUserClientM
 getUserClient = userClient
+
+
+getGroupsClient :: GetGroupsClientM
+createGroupClient :: CreateGroupClientM
+getGroupClient :: GroupId -> GroupClientM
+getGroupsClient :<|> createGroupClient :<|> getGroupClient = groupsClient
+
+
+getGroupClientById :: GroupId -> GroupClient
+getGroupClientById gid =
+  let getGroup' :<|> deleteGroup' = getGroupClient gid
+   in GroupClient { getGroup = getGroup', deleteGroup = deleteGroup' }
 
 
 getPoliciesClient :: GetPoliciesClientM

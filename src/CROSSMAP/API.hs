@@ -43,7 +43,7 @@ type LoginAPI = "login" :> LoginEndpoint
 
 type PrivateAPI
   = "policies" :> PoliciesAPI
-  :<|> "public_keys" :> PublicKeysAPI
+  :<|> "public-keys" :> PublicKeysAPI
   :<|> "session" :> SessionAPI
   :<|> "sessions" :> SessionsAPI
   :<|> "user" :> UserAPI
@@ -68,7 +68,7 @@ type PoliciesAPI
 type PublicKeysAPI
   = ( Get '[JSON] [Base64PublicKey] )
   :<|> ( ReqBody '[JSON] CreatePublicKeyRequest :> Post '[JSON] PublicKeyInfo )
-  :<|> ( Capture "public_key" Base64PublicKey :> PublicKeyAPI )
+  :<|> ( Capture "public-key" Base64PublicKey :> PublicKeyAPI )
 
 
 type PublicKeyAPI

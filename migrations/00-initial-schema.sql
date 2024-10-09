@@ -83,22 +83,6 @@ CREATE TABLE IF NOT EXISTS "sessions" (
   FOREIGN KEY ("user_uuid") REFERENCES "users" ("uuid") ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS "sessions_policies" (
-  "session_public_key" BYTEA NOT NULL,
-  "policy_uuid" UUID NOT NULL,
-  PRIMARY KEY ("session_public_key", "policy_uuid"),
-  FOREIGN KEY ("session_public_key") REFERENCES "sessions" ("public_key") ON DELETE CASCADE,
-  FOREIGN KEY ("policy_uuid") REFERENCES "policies" ("uuid") ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "sessions_groups" (
-  "session_public_key" BYTEA NOT NULL,
-  "group_uuid" UUID NOT NULL,
-  PRIMARY KEY ("session_public_key", "group_uuid"),
-  FOREIGN KEY ("session_public_key") REFERENCES "sessions" ("public_key") ON DELETE CASCADE,
-  FOREIGN KEY ("group_uuid") REFERENCES "groups" ("uuid") ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS "topics" (
   "uuid" UUID PRIMARY KEY,
   "broadcast" BOOLEAN NOT NULL,

@@ -33,6 +33,7 @@ library
       CROSSMAP.Client.Command.Create.Group
       CROSSMAP.Client.Command.Create.User
       CROSSMAP.Client.Command.Delete
+      CROSSMAP.Client.Command.Delete.Group
       CROSSMAP.Client.Command.Delete.PublicKey
       CROSSMAP.Client.Command.Delete.Session
       CROSSMAP.Client.Command.Get

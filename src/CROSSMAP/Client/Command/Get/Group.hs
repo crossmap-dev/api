@@ -30,10 +30,10 @@ runGetGroup (GetGroupCommand groupText) = do
   let maybeGroupId = fromText groupText
   maybeState <- loadState
   case (maybeGroupId, maybeState) of
-    (Nothing, _) ->
-      putStrLn "Invalid group."
     (_, Nothing) ->
       putStrLn "Client not logged in."
+    (Nothing, _) ->
+      putStrLn "Invalid group."
     (Just groupId', Just state) -> do
       client <- loadSessionFromState state
       result <- runClient client $ getGroup (getGroupClientById $ GroupId groupId')

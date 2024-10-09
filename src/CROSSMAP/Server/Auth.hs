@@ -84,12 +84,12 @@ checkAuth State{pool=pool} AuthHeaders{..} req = do
   ensureValidSignature authHeader stringToSign' signatureInfoPublicKey
   result <- liftIO $ runQuery pool $ publicKeyInfoPolicyQuery signatureInfoPublicKey
   case result of
-    Right (Just AuthQueryResult{..}) -> do
+    Right (Just PublicKeyInfoPolicyRow{..}) -> do
       return $ SignatureInfo
         { signatureInfoHost = signatureInfoHost
         , signatureInfoRequestId = signatureInfoRequestId
-        , signatureInfoPolicyIds = authQueryResultPolicyIds
-        , signatureInfoPublicKeyInfo = authQueryResultPublicKeyInfo
+        , signatureInfoPolicyIds = publicKeyInfoPolicyRowPolicyIds
+        , signatureInfoPublicKeyInfo = publicKeyInfoPolicyRowPublicKeyInfo
         , signatureInfoSocketAddr = remoteHost req
         }
     Right Nothing -> throwError $ err401 { errBody = "Public key not found" }

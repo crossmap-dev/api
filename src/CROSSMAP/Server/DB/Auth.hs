@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CROSSMAP.Server.DB.Auth
-  ( AuthQueryResult(..)
+  ( PublicKeyInfoPolicyRow(..)
   , publicKeyInfoPolicyQuery
   ) where
 
@@ -18,18 +18,18 @@ import CROSSMAP.PublicKey
 import CROSSMAP.User (UserId(..))
 
 
-data AuthQueryResult = AuthQueryResult
-  { authQueryResultPublicKeyInfo :: PublicKeyInfo
-  , authQueryResultPolicyIds :: [PolicyId]
+data PublicKeyInfoPolicyRow = PublicKeyInfoPolicyRow
+  { publicKeyInfoPolicyRowPublicKeyInfo :: PublicKeyInfo
+  , publicKeyInfoPolicyRowPolicyIds :: [PolicyId]
   } deriving (Eq, Show)
 
 
-publicKeyInfoPolicyQuery :: PublicKey -> Transaction (Maybe AuthQueryResult)
+publicKeyInfoPolicyQuery :: PublicKey -> Transaction (Maybe PublicKeyInfoPolicyRow)
 publicKeyInfoPolicyQuery publicKey =
   statement publicKey publicKeyInfoPolicyQueryStatement
 
 
-publicKeyInfoPolicyQueryStatement :: Statement PublicKey (Maybe AuthQueryResult)
+publicKeyInfoPolicyQueryStatement :: Statement PublicKey (Maybe PublicKeyInfoPolicyRow)
 publicKeyInfoPolicyQueryStatement = Statement sql encoder decoder True where
   sql = "SELECT \
         \  upkr.key_type, \
@@ -49,8 +49,8 @@ publicKeyInfoPolicyQueryStatement = Statement sql encoder decoder True where
         \  upkr.expires_at, \
         \  upkr.user_uuid"
   encoder = unPublicKey >$< E.param (E.nonNullable E.bytea)
-  decoder :: D.Result (Maybe AuthQueryResult)
-  decoder = D.rowMaybe $ AuthQueryResult
+  decoder :: D.Result (Maybe PublicKeyInfoPolicyRow)
+  decoder = D.rowMaybe $ PublicKeyInfoPolicyRow
     <$> (publicKeyInfo
       <$> D.column (D.nonNullable D.text)
       <*> (PublicKey <$> D.column (D.nonNullable D.bytea))

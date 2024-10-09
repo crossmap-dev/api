@@ -42,6 +42,7 @@ library
       CROSSMAP.Client.Command.Get.User
       CROSSMAP.Client.Command.Keypair
       CROSSMAP.Client.Command.List
+      CROSSMAP.Client.Command.List.Groups
       CROSSMAP.Client.Command.List.Policies
       CROSSMAP.Client.Command.List.PublicKeys
       CROSSMAP.Client.Command.List.Sessions

@@ -6,6 +6,7 @@ module CROSSMAP.Client.Command.List
 
 import Options.Applicative
 
+import CROSSMAP.Client.Command.List.Groups
 import CROSSMAP.Client.Command.List.Policies
 import CROSSMAP.Client.Command.List.PublicKeys
 import CROSSMAP.Client.Command.List.Sessions
@@ -17,6 +18,7 @@ data ListCommand
   | ListPublicKeys ListPublicKeysCommand
   | ListSessions ListSessionsCommand
   | ListUsers ListUsersCommand
+  | ListGroups ListGroupsCommand
   deriving (Show)
 
 
@@ -24,6 +26,8 @@ listOptions :: Parser ListCommand
 listOptions = hsubparser
   ( command "users"
     ( info (ListUsers <$> listUsersOptions) ( progDesc "List users" ) )
+  <> command "groups"
+    ( info (ListGroups <$> listGroupsOptions) ( progDesc "List groups" ) )
   <> command "sessions"
     ( info (ListSessions <$> listSessionsOptions) ( progDesc "List sessions" ) )
   <> command "public-keys"
@@ -38,3 +42,4 @@ runList (ListPolicies cmd) = runListPolicies cmd
 runList (ListPublicKeys cmd) = runListPublicKeys cmd
 runList (ListSessions cmd) = runListSessions cmd
 runList (ListUsers cmd) = runListUsers cmd
+runList (ListGroups cmd) = runListGroups cmd

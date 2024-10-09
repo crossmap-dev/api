@@ -6,6 +6,7 @@ module CROSSMAP.Client.Command.Get
 
 import Options.Applicative
 
+import CROSSMAP.Client.Command.Get.Group
 import CROSSMAP.Client.Command.Get.Policy
 import CROSSMAP.Client.Command.Get.PublicKey
 import CROSSMAP.Client.Command.Get.Session
@@ -17,6 +18,7 @@ data GetCommand
   | GetPublicKey GetPublicKeyCommand
   | GetSession GetSessionCommand
   | GetUser GetUserCommand
+  | GetGroup GetGroupCommand
   deriving (Show)
 
 
@@ -24,6 +26,8 @@ getOptions :: Parser GetCommand
 getOptions = hsubparser
   ( command "user"
     ( info (GetUser <$> getUserOptions) ( progDesc "Get user" ) )
+  <> command "group"
+    ( info (GetGroup <$> getGroupOptions) ( progDesc "Get group" ) )
   <> command "session"
     ( info (GetSession <$> getSessionOptions) ( progDesc "Get session" ) )
   <> command "public-key"
@@ -35,6 +39,7 @@ getOptions = hsubparser
 
 runGet :: GetCommand -> IO ()
 runGet (GetUser cmd) = runGetUser cmd
+runGet (GetGroup cmd) = runGetGroup cmd
 runGet (GetSession cmd) = runGetSession cmd
 runGet (GetPublicKey cmd) = runGetPublicKey cmd
 runGet (GetPolicy cmd) = runGetPolicy cmd

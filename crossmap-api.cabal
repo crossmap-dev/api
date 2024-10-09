@@ -36,6 +36,7 @@ library
       CROSSMAP.Client.Command.Delete.PublicKey
       CROSSMAP.Client.Command.Delete.Session
       CROSSMAP.Client.Command.Get
+      CROSSMAP.Client.Command.Get.Group
       CROSSMAP.Client.Command.Get.Policy
       CROSSMAP.Client.Command.Get.PublicKey
       CROSSMAP.Client.Command.Get.Session

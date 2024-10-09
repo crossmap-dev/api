@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module CROSSMAP.Server.DB.User
   ( Username(..)
@@ -10,6 +11,8 @@ module CROSSMAP.Server.DB.User
   , insertUsername
   , insertUserWithName
   , userHasName
+  , resolveUser
+  , resolveUsers
   ) where
 
 import Data.Functor.Contravariant ((>$<))
@@ -122,3 +125,18 @@ userHasName :: UserId -> Text -> Transaction Bool
 userHasName user name = do
   names <- getUserUsernames user
   return $ any ((== name) . username) names
+
+
+resolveUser :: UserIdentifier -> Transaction (Maybe UserId)
+resolveUser (UserIdentifierUserId user) = return $ Just user
+resolveUser (UserIdentifierUsername name) = getUserByUsername name
+
+
+resolveUsers :: [UserIdentifier] -> Transaction (Either Text [UserId])
+resolveUsers = fmap sequence . mapM resolveUser'
+  where
+    resolveUser' user = case user of
+      UserIdentifierUserId u -> return $ Right u
+      UserIdentifierUsername n -> getUserByUsername n >>= \case
+        Just u -> return $ Right u
+        Nothing -> return $ Left $ "User not found: " <> n

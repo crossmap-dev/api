@@ -5,6 +5,7 @@ module CROSSMAP.User
   , UserResponse(..)
   , UserPublicKey(..)
   , UserId(..)
+  , UserIdentifier(..)
   ) where
 
 import Data.Aeson
@@ -58,6 +59,24 @@ instance ToHttpApiData UserId where
 
 instance ToJSON UserId where
   toJSON (UserId uuid) = String $ toText uuid
+
+
+data UserIdentifier
+  = UserIdentifierUserId UserId
+  | UserIdentifierUsername Text
+  deriving (Eq, Show)
+
+
+instance FromJSON UserIdentifier where
+  parseJSON = withText "UserIdentifier" $ \s ->
+    case fromText s of
+      Just uuid -> return $ UserIdentifierUserId $ UserId uuid
+      Nothing -> return $ UserIdentifierUsername s
+
+
+instance ToJSON UserIdentifier where
+  toJSON (UserIdentifierUserId (UserId uuid)) = String $ toText uuid
+  toJSON (UserIdentifierUsername username) = String username
 
 
 data UserResponse = UserResponse

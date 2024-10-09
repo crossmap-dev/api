@@ -6,7 +6,6 @@ module CROSSMAP.Group
   , GroupId(..)
   , GroupName
   , createGroup
-  , createGroupRequest
   ) where
 
 import Data.Aeson
@@ -46,7 +45,7 @@ type GroupName = Text
 
 data CreateGroupRequest = CreateGroupRequest
   { createGroupNames :: [GroupName]
-  , createGroupUsers :: [UserId]
+  , createGroupUsers :: [UserIdentifier]
   } deriving (Eq, Show)
 
 
@@ -91,8 +90,3 @@ createGroup :: [GroupName] -> [UserId] -> IO Group
 createGroup names users = do
   gid <- nextRandom
   return $ Group (GroupId gid) names users
-
-
-createGroupRequest :: CreateGroupRequest -> IO Group
-createGroupRequest CreateGroupRequest{..} =
-  createGroup createGroupNames createGroupUsers

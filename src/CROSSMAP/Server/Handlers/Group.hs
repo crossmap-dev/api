@@ -8,11 +8,14 @@ module CROSSMAP.Server.Handlers.Group
   ) where
 
 import Control.Monad.IO.Class
+import Data.ByteString.Lazy (fromStrict)
+import Data.Text.Encoding (encodeUtf8)
 import Servant
 
 import CROSSMAP.Group
 import CROSSMAP.Server.DB
 import CROSSMAP.Server.DB.Group
+import CROSSMAP.Server.DB.User
 import CROSSMAP.Server.Auth
 import CROSSMAP.Server.Helpers
 import CROSSMAP.Server.State
@@ -38,13 +41,19 @@ getGroupsHandler state@State{..} signatureInfo = do
 
 
 createGroupHandler :: State -> SignatureInfo -> CreateGroupRequest -> Handler Group
-createGroupHandler state@State{..} signatureInfo req = do
+createGroupHandler state@State{..} signatureInfo CreateGroupRequest{..} = do
   _ <- authorize state signatureInfo
-  group <- liftIO $ createGroupRequest req
-  result <- liftIO $ runQuery pool $ insertGroup group
-  case result of
+  result0 <- liftIO $ runQuery pool $ resolveUsers createGroupUsers
+  case result0 of
     Left err -> liftIO (print err) >> throwError err500 { errBody = "Database error" }
-    Right () -> return group
+    Right (Left err) -> throwError err400 { errBody = fromStrict $ encodeUtf8 err }
+    Right (Right users) -> do
+      group <- liftIO $ createGroup createGroupNames users
+      result1 <- liftIO $ runQuery pool $ insertGroup group
+      case result1 of
+        Right () -> return group
+        Left err ->
+          liftIO (print err) >> throwError err500 { errBody = "Database error" }
 
 
 deleteGroupHandler :: State -> SignatureInfo -> GroupId -> Handler NoContent

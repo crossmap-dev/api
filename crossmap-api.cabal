@@ -30,6 +30,7 @@ library
       CROSSMAP.Client.API
       CROSSMAP.Client.Command
       CROSSMAP.Client.Command.Create
+      CROSSMAP.Client.Command.Create.Group
       CROSSMAP.Client.Command.Create.User
       CROSSMAP.Client.Command.Delete
       CROSSMAP.Client.Command.Delete.PublicKey

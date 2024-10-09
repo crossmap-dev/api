@@ -24,8 +24,8 @@ import CROSSMAP.User
 
 
 createUserHandler :: State -> SignatureInfo -> CreateUserRequest -> Handler UserResponse
-createUserHandler State{..} SignatureInfo{..} req = do
-  ensureSession signatureInfoPublicKeyInfo
+createUserHandler state@State{..} signatureInfo req = do
+  _ <- authorize state signatureInfo
   userId <- UserId <$> liftIO nextRandom
   now <- liftIO getCurrentTime
   let expire = addUTCTime (60 * 60 * 24 * 30) now
@@ -36,24 +36,13 @@ createUserHandler State{..} SignatureInfo{..} req = do
 
 
 getUserHandler :: State -> SignatureInfo -> Handler UserResponse
-getUserHandler State{..} SignatureInfo{..} = do
-  ensureSession signatureInfoPublicKeyInfo
-  let PublicKeyInfo{..} = signatureInfoPublicKeyInfo
-  result0 <- liftIO $ runQuery pool $ getUser $ unUserId publicKeyInfoUser
-  result1 <- liftIO $ runQuery pool $ getUserUsernames publicKeyInfoUser
-  result2 <- liftIO $ runQuery pool $ listUserPublicKeys publicKeyInfoUser
-  case (result0, result1, result2) of
-    (Right (Just user), Right usernames, Right publicKeys) -> return $ UserResponse
-      { userResponseUserId = unUserId user
-      , userResponseUsernames = fmap username usernames
-      , userResponsePublicKeys = publicKeys
-      }
-    _ -> throwError err500 { errBody = "Database error" }
+getUserHandler state signatureInfo@SignatureInfo{..} =
+  getUserByIdHandler state signatureInfo $ publicKeyInfoUser signatureInfoPublicKeyInfo
 
 
 getUserByIdHandler :: State -> SignatureInfo -> UserId -> Handler UserResponse
-getUserByIdHandler State{..} SignatureInfo{..} userId = do
-  ensureSession signatureInfoPublicKeyInfo
+getUserByIdHandler state@State{..} signatureInfo userId = do
+  _ <- authorize state signatureInfo
   result0 <- liftIO $ runQuery pool $ getUser $ unUserId userId
   result1 <- liftIO $ runQuery pool $ getUserUsernames userId
   result2 <- liftIO $ runQuery pool $ listUserPublicKeys userId
@@ -67,8 +56,8 @@ getUserByIdHandler State{..} SignatureInfo{..} userId = do
 
 
 getUserByUsernameHandler :: State -> SignatureInfo -> Text -> Handler UserResponse
-getUserByUsernameHandler State{..} SignatureInfo{..} name = do
-  ensureSession signatureInfoPublicKeyInfo
+getUserByUsernameHandler state@State{..} signatureInfo name = do
+  _ <- authorize state signatureInfo
   result1 <- liftIO $ runQuery pool $ getUserByUsername name
   case result1 of
     Right (Just userId) -> do

@@ -33,11 +33,12 @@ import CROSSMAP.Server.State
 
 data SignatureInfo = SignatureInfo
   { signatureInfoHost :: Text
+  , signatureInfoRequest :: Request
   , signatureInfoRequestId :: UUID
   , signatureInfoPolicyIds :: [PolicyId]
   , signatureInfoPublicKeyInfo :: PublicKeyInfo
   , signatureInfoSocketAddr :: SockAddr
-  } deriving (Eq, Show)
+  } deriving (Show)
 
 
 data AuthHeaders = AuthHeaders
@@ -87,6 +88,7 @@ checkAuth State{pool=pool} AuthHeaders{..} req = do
     Right (Just PublicKeyInfoPolicyRow{..}) -> do
       return $ SignatureInfo
         { signatureInfoHost = signatureInfoHost
+        , signatureInfoRequest = req
         , signatureInfoRequestId = signatureInfoRequestId
         , signatureInfoPolicyIds = publicKeyInfoPolicyRowPolicyIds
         , signatureInfoPublicKeyInfo = publicKeyInfoPolicyRowPublicKeyInfo

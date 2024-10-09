@@ -34,7 +34,7 @@ import CROSSMAP.Server.State
 data SignatureInfo = SignatureInfo
   { signatureInfoHost :: Text
   , signatureInfoRequestId :: UUID
-  , signatureInfoPolicyRules :: [PolicyRule]
+  , signatureInfoPolicyIds :: [PolicyId]
   , signatureInfoPublicKeyInfo :: PublicKeyInfo
   , signatureInfoSocketAddr :: SockAddr
   } deriving (Eq, Show)
@@ -81,19 +81,18 @@ checkAuth State{pool=pool} AuthHeaders{..} req = do
         (encodeUtf8 signatureInfoHost)
         (rawPathInfo req)
         (rawQueryString req)
-      resource = decodeUtf8 $ rawPathInfo req
   ensureValidSignature authHeader stringToSign' signatureInfoPublicKey
-  result <- liftIO $ runQuery pool $ authQuery signatureInfoPublicKey resource True
+  result <- liftIO $ runQuery pool $ publicKeyInfoPolicyQuery signatureInfoPublicKey
   case result of
-    Right (Just publicKeyInfo, policyRules) ->
+    Right (Just AuthQueryResult{..}) -> do
       return $ SignatureInfo
         { signatureInfoHost = signatureInfoHost
         , signatureInfoRequestId = signatureInfoRequestId
-        , signatureInfoPolicyRules = policyRules
-        , signatureInfoPublicKeyInfo = publicKeyInfo
+        , signatureInfoPolicyIds = authQueryResultPolicyIds
+        , signatureInfoPublicKeyInfo = authQueryResultPublicKeyInfo
         , signatureInfoSocketAddr = remoteHost req
         }
-    Right (Nothing, _) -> throwError $ err401 { errBody = "Public key not found" }
+    Right Nothing -> throwError $ err401 { errBody = "Public key not found" }
     Left err -> do
       liftIO $ print err
       throwError $ err500 { errBody = "Internal server error" }

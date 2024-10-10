@@ -71,6 +71,7 @@ library
       CROSSMAP.Server.DB.Auth
       CROSSMAP.Server.DB.CreateUser
       CROSSMAP.Server.DB.Group
+      CROSSMAP.Server.DB.GroupPolicies
       CROSSMAP.Server.DB.Migration
       CROSSMAP.Server.DB.Policy
       CROSSMAP.Server.DB.PublicKey
@@ -79,6 +80,7 @@ library
       CROSSMAP.Server.DB.UserPolicy
       CROSSMAP.Server.Handlers
       CROSSMAP.Server.Handlers.Group
+      CROSSMAP.Server.Handlers.GroupPolicies
       CROSSMAP.Server.Handlers.Login
       CROSSMAP.Server.Handlers.Policies
       CROSSMAP.Server.Handlers.PublicKeys

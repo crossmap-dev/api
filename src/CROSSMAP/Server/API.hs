@@ -28,6 +28,7 @@ loginServer = loginHandler
 secureServer :: State -> Server SecureSessionAPI
 secureServer state sig
   = groupsServer state sig
+  :<|> groupPoliciesServer state sig
   :<|> policiesServer state sig
   :<|> publicKeysServer state sig
   :<|> sessionServer state sig
@@ -47,6 +48,13 @@ groupByIdServer :: State -> SignatureInfo -> GroupId -> Server GroupAPI
 groupByIdServer state sig pk
   = getGroupHandler state sig pk
   :<|> deleteGroupHandler state sig pk
+
+
+groupPoliciesServer :: State -> SignatureInfo -> Server GroupPoliciesAPI
+groupPoliciesServer state sig
+  = getGroupPoliciesHandler state sig
+  :<|> addPolicyToGroupHandler state sig
+  :<|> removePolicyFromGroupHandler state sig
 
 
 policiesServer :: State -> SignatureInfo -> Server PoliciesAPI

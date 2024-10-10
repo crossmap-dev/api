@@ -11,6 +11,9 @@ module CROSSMAP.Client.API
   , getGroupsClient
   , createGroupClient
   , getGroupClientById
+  , getGroupPoliciesClient
+  , addPolicyToGroupClient
+  , removePolicyFromGroupClient
   , getPoliciesClient
   , createPolicyClient
   , getPolicyClientById
@@ -68,6 +71,21 @@ type GetGroupClientM = ClientM Group
 
 
 type DeleteGroupClientM = ClientM NoContent
+
+
+type GroupPoliciesClientM
+  = GetGroupPoliciesClientM
+  :<|> AddPolicyToGroupClientM
+  :<|> RemovePolicyFromGroupClientM
+
+
+type GetGroupPoliciesClientM = GroupId -> ClientM [PolicyId]
+
+
+type AddPolicyToGroupClientM = GroupId -> PolicyId -> ClientM NoContent
+
+
+type RemovePolicyFromGroupClientM = GroupId -> PolicyId -> ClientM NoContent
 
 
 type PoliciesClientM
@@ -181,7 +199,9 @@ publicKeysClient :: PublicKeysClientM
 sessionsClient :: SessionsClientM
 policiesClient :: PoliciesClientM
 groupsClient :: GroupsClientM
+groupsPoliciesClient :: GroupPoliciesClientM
 groupsClient
+  :<|> groupsPoliciesClient
   :<|> policiesClient
   :<|> publicKeysClient
   :<|> sessionClient
@@ -210,6 +230,13 @@ getGroupClientById :: GroupId -> GroupClient
 getGroupClientById gid =
   let getGroup' :<|> deleteGroup' = getGroupClient gid
    in GroupClient { getGroup = getGroup', deleteGroup = deleteGroup' }
+
+
+getGroupPoliciesClient :: GetGroupPoliciesClientM
+addPolicyToGroupClient :: AddPolicyToGroupClientM
+removePolicyFromGroupClient :: RemovePolicyFromGroupClientM
+getGroupPoliciesClient :<|> addPolicyToGroupClient :<|> removePolicyFromGroupClient
+  = groupsPoliciesClient
 
 
 getPoliciesClient :: GetPoliciesClientM

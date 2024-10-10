@@ -28,6 +28,7 @@ type LoginAPI = "login" :> LoginEndpoint
 
 type PrivateAPI
   = "groups" :> GroupsAPI
+  :<|> "group-policies" :> GroupPoliciesAPI
   :<|> "policies" :> PoliciesAPI
   :<|> "public-keys" :> PublicKeysAPI
   :<|> "session" :> SessionAPI
@@ -49,6 +50,12 @@ type GroupsAPI
   = ( Get '[JSON] [GroupId] )
   :<|> ( ReqBody '[JSON] CreateGroupRequest :> Post '[JSON] Group )
   :<|> ( Capture "group" GroupId :> GroupAPI )
+
+
+type GroupPoliciesAPI
+  = ( Capture "group" GroupId :> Get '[JSON] [PolicyId] )
+  :<|> ( Capture "group" GroupId :> Capture "policy" PolicyId :> Put '[JSON] NoContent )
+  :<|> ( Capture "group" GroupId :> Capture "policy" PolicyId :> Delete '[JSON] NoContent )
 
 
 type PolicyAPI = GetPolicyEndpoint :<|> DeletePolicyEndpoint

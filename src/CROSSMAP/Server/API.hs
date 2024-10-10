@@ -35,6 +35,7 @@ secureServer state sig
   :<|> sessionsServer state sig
   :<|> userServer state sig
   :<|> usersServer state sig
+  :<|> usersPoliciesServer state sig
 
 
 groupsServer :: State -> SignatureInfo -> Server GroupsAPI
@@ -84,6 +85,13 @@ usersServer state sig
   :<|> createUserHandler state sig
   :<|> getUserByIdHandler state sig
   :<|> getUserByUsernameHandler state sig
+
+
+usersPoliciesServer :: State -> SignatureInfo -> Server UsersPoliciesAPI
+usersPoliciesServer state sig
+  = getUserPoliciesHandler state sig
+  :<|> addUserPolicyHandler state sig
+  :<|> removeUserPolicyHandler state sig
 
 
 publicKeysServer :: State -> SignatureInfo -> Server PublicKeysAPI

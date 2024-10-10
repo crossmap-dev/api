@@ -25,6 +25,9 @@ module CROSSMAP.Client.API
   , createPublicKeyClient
   , getUserByIdClient
   , getUserByUsernameClient
+  , getUserPoliciesClient
+  , addUserPolicyClient
+  , removeUserPolicyClient
   , getSessionsClient
   , getSessionClientByPublicKey
   ) where
@@ -161,6 +164,21 @@ type GetUserByIdClientM = UserId -> GetUserClientM
 type GetUserByUsernameClientM = Text -> GetUserClientM
 
 
+type UserPoliciesClientM
+  = GetUserPoliciesClientM
+  :<|> AddUserPolicyClientM
+  :<|> RemoveUserPolicyClientM
+
+
+type GetUserPoliciesClientM = UserId -> ClientM [PolicyId]
+
+
+type AddUserPolicyClientM = UserId -> PolicyId -> ClientM NoContent
+
+
+type RemoveUserPolicyClientM = UserId -> PolicyId -> ClientM NoContent
+
+
 type GetSessionsClientM = ClientM [Base64PublicKey]
 
 
@@ -195,6 +213,7 @@ loginClient = client loginAPI
 sessionClient :: SessionClientM
 userClient :: UserClientM
 usersClient :: UsersClientM
+usersPoliciesClient :: UserPoliciesClientM
 publicKeysClient :: PublicKeysClientM
 sessionsClient :: SessionsClientM
 policiesClient :: PoliciesClientM
@@ -208,6 +227,7 @@ groupsClient
   :<|> sessionsClient
   :<|> userClient
   :<|> usersClient
+  :<|> usersPoliciesClient
   = client privateAPI
 
 
@@ -260,6 +280,13 @@ getUsersClient
   :<|> getUserByIdClient
   :<|> getUserByUsernameClient
   = usersClient
+
+
+getUserPoliciesClient :: GetUserPoliciesClientM
+addUserPolicyClient :: AddUserPolicyClientM
+removeUserPolicyClient :: RemoveUserPolicyClientM
+getUserPoliciesClient :<|> addUserPolicyClient :<|> removeUserPolicyClient
+  = usersPoliciesClient
 
 
 getPublicKeysClient :: GetPublicKeysClientM

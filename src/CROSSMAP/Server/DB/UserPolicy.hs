@@ -2,6 +2,7 @@
 module CROSSMAP.Server.DB.UserPolicy
   ( getUserPolicy
   , insertUserPolicy
+  , deleteUserPolicy
   ) where
 
 import Data.Functor.Contravariant ((>$<))
@@ -36,6 +37,18 @@ insertUserPolicy uid pid = statement (uid, pid) insertUserPolicyStatement
 insertUserPolicyStatement :: Statement (UserId, PolicyId) ()
 insertUserPolicyStatement = Statement sql encoder decoder True where
   sql = "INSERT INTO users_policies (user_uuid, policy_uuid) VALUES ($1, $2)"
+  encoder = ((unUserId . fst) >$< E.param (E.nonNullable E.uuid))
+         <> ((unPolicyId . snd) >$< E.param (E.nonNullable E.uuid))
+  decoder = D.noResult
+
+
+deleteUserPolicy :: UserId -> PolicyId -> Transaction ()
+deleteUserPolicy uid pid = statement (uid, pid) deleteUserPolicyStatement
+
+
+deleteUserPolicyStatement :: Statement (UserId, PolicyId) ()
+deleteUserPolicyStatement = Statement sql encoder decoder True where
+  sql = "DELETE FROM users_policies WHERE user_uuid = $1 AND policy_uuid = $2"
   encoder = ((unUserId . fst) >$< E.param (E.nonNullable E.uuid))
          <> ((unPolicyId . snd) >$< E.param (E.nonNullable E.uuid))
   decoder = D.noResult

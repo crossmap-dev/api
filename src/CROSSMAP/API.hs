@@ -35,6 +35,7 @@ type PrivateAPI
   :<|> "sessions" :> SessionsAPI
   :<|> "user" :> UserAPI
   :<|> "users" :> UsersAPI
+  :<|> "users-policies" :> UsersPoliciesAPI
 
 
 type SecureUserAPI = AuthProtect "signature" :> LoginAPI
@@ -94,6 +95,12 @@ type UsersAPI
   :<|> ( ReqBody '[JSON] CreateUserRequest :> Post '[JSON] UserResponse )
   :<|> ( Capture "user" UserId :> UserAPI )
   :<|> ( Capture "username" Text :> UserAPI )
+
+
+type UsersPoliciesAPI
+  = ( Capture "user" UserId :> Get '[JSON] [PolicyId] )
+  :<|> ( Capture "user" UserId :> Capture "policy" PolicyId :> Put '[JSON] NoContent )
+  :<|> ( Capture "user" UserId :> Capture "policy" PolicyId :> Delete '[JSON] NoContent )
 
 
 type IndexEndpoint = Get '[JSON] IndexResponse

@@ -8,6 +8,7 @@ import Options.Applicative
 
 import CROSSMAP.Client.Command.Create.Group
 import CROSSMAP.Client.Command.Create.GroupPolicy
+import CROSSMAP.Client.Command.Create.Policy
 import CROSSMAP.Client.Command.Create.User
 import CROSSMAP.Client.Command.Create.UserPolicy
 
@@ -15,6 +16,7 @@ import CROSSMAP.Client.Command.Create.UserPolicy
 data CreateCommand
   = CreateUser CreateUserCommand
   | CreateGroup CreateGroupCommand
+  | CreatePolicy CreatePolicyCommand
   | CreateUserPolicy CreateUserPolicyCommand
   | CreateGroupPolicy CreateGroupPolicyCommand
   deriving (Show)
@@ -28,6 +30,9 @@ createOptions = hsubparser
   <> command "group"
     ( info (CreateGroup <$> createGroupOptions)
       ( progDesc "Create a group" ) )
+  <> command "policy"
+    ( info (CreatePolicy <$> createPolicyOptions)
+      ( progDesc "Create a policy" ) )
   <> command "user-policy"
     ( info (CreateUserPolicy <$> createUserPolicyOptions)
       ( progDesc "Create a user policy" ) )
@@ -40,5 +45,6 @@ createOptions = hsubparser
 runCreate :: CreateCommand -> IO ()
 runCreate (CreateUser cmd) = runCreateUser cmd
 runCreate (CreateGroup cmd) = runCreateGroup cmd
+runCreate (CreatePolicy cmd) = runCreatePolicy cmd
 runCreate (CreateUserPolicy cmd) = runCreateUserPolicy cmd
 runCreate (CreateGroupPolicy cmd) = runCreateGroupPolicy cmd

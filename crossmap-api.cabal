@@ -60,6 +60,7 @@ library
       CROSSMAP.Client.Command.User
       CROSSMAP.Client.State
       CROSSMAP.Client.Util
+      CROSSMAP.Event
       CROSSMAP.Group
       CROSSMAP.Index
       CROSSMAP.Login
@@ -70,6 +71,7 @@ library
       CROSSMAP.Server.API
       CROSSMAP.Server.App
       CROSSMAP.Server.Auth
+      CROSSMAP.Server.Client
       CROSSMAP.Server.Command
       CROSSMAP.Server.Config
       CROSSMAP.Server.DB
@@ -98,6 +100,7 @@ library
       CROSSMAP.Server.Helpers
       CROSSMAP.Server.Init
       CROSSMAP.Server.Socket
+      CROSSMAP.Server.Socket.Handshake
       CROSSMAP.Server.State
       CROSSMAP.Session
       CROSSMAP.User
@@ -115,6 +118,7 @@ library
     , base64
     , bytestring
     , case-insensitive
+    , cereal
     , containers
     , crypton
     , data-textual
@@ -131,6 +135,7 @@ library
     , iproute
     , network
     , optparse-applicative
+    , protobuf
     , servant-client
     , servant-server
     , stm
@@ -161,6 +166,7 @@ executable crossmap
     , base64
     , bytestring
     , case-insensitive
+    , cereal
     , containers
     , crossmap-api
     , crypton
@@ -178,6 +184,7 @@ executable crossmap
     , iproute
     , network
     , optparse-applicative
+    , protobuf
     , servant-client
     , servant-server
     , stm
@@ -208,6 +215,7 @@ executable crossmap-server
     , base64
     , bytestring
     , case-insensitive
+    , cereal
     , containers
     , crossmap-api
     , crypton
@@ -225,6 +233,7 @@ executable crossmap-server
     , iproute
     , network
     , optparse-applicative
+    , protobuf
     , servant-client
     , servant-server
     , stm

@@ -4,7 +4,7 @@ module CROSSMAP.Client.Command.Create.Group
   , runCreateGroup
   ) where
 
-import Data.Text (Text, pack)
+import Data.Text (Text)
 import Data.UUID
 import Options.Applicative
 

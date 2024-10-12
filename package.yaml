@@ -17,6 +17,7 @@ dependencies:
 - base64
 - bytestring
 - case-insensitive
+- cereal
 - containers
 - crypton
 - data-textual
@@ -33,6 +34,7 @@ dependencies:
 - iproute
 - network
 - optparse-applicative
+- protobuf
 - servant-client
 - servant-server
 - stm

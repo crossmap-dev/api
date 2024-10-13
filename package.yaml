@@ -32,6 +32,7 @@ dependencies:
 - http-client-tls
 - http-types
 - iproute
+- memory
 - network
 - optparse-applicative
 - protobuf

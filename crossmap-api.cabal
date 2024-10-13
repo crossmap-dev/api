@@ -133,6 +133,7 @@ library
     , http-client-tls
     , http-types
     , iproute
+    , memory
     , network
     , optparse-applicative
     , protobuf
@@ -182,6 +183,7 @@ executable crossmap
     , http-client-tls
     , http-types
     , iproute
+    , memory
     , network
     , optparse-applicative
     , protobuf
@@ -231,6 +233,7 @@ executable crossmap-server
     , http-client-tls
     , http-types
     , iproute
+    , memory
     , network
     , optparse-applicative
     , protobuf
